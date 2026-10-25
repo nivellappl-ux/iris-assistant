@@ -1,0 +1,132 @@
+Quero fazer uma evolução importante no projecto IRIS existente.
+
+IMPORTANTE: o DUVION é uma nova direcção para este projecto e AINDA NÃO EXISTE qualquer integração entre a IRIS e o Duvion.
+
+Portanto:
+
+NÃO assumes que existe API do Duvion.
+NÃO assumes que existe backend do Duvion.
+NÃO assumes que existem endpoints.
+NÃO assumes que existem módulos conectados.
+NÃO cries dados reais do Duvion.
+NÃO inventes autenticação do Duvion.
+NÃO inventes uma estrutura de ERP dentro da IRIS.
+
+Neste momento quero apenas preparar a IRIS para que futuramente possa tornar-se a interface inteligente do Duvion.
+
+A IRIS ACTUAL DEVE SER PRESERVADA.
+
+Não reconstruir do zero.
+Não substituir a identidade visual.
+Não remover o Dynamic Island.
+Não substituir a Mochi.
+Não transformar a aplicação numa dashboard.
+Não transformar a IRIS num chatbot.
+Não remover funcionalidades existentes.
+
+A ideia futura é:
+
+DUVION
+Sistema operacional de gestão empresarial.
+
+IRIS
+Assistente/interfaz inteligente que futuramente permitirá interagir com o Duvion.
+
+MOCHI
+Personalidade visual da IRIS.
+
+Mas esta ligação será implementada APENAS numa fase posterior.
+
+NESTA FASE:
+
+Quero apenas criar uma arquitectura preparada para essa evolução.
+
+Criar internamente uma camada modular chamada:
+
+IRIS CORE
+
+Arquitectura:
+
+IRIS UI
+↓
+IRIS CORE
+↓
+CAPABILITIES
+↓
+FUTURE INTEGRATIONS
+
+Por enquanto, as capabilities existentes continuam a funcionar normalmente.
+
+Exemplo:
+
+Tasks
+Voice Commands
+Quick Capture
+Local Storage
+Dynamic Island
+Notifications
+Focus Mode
+Mochi
+Local Context
+
+No futuro poderá existir:
+
+Duvion Integration
+
+Mas NÃO implementar agora.
+
+Criar apenas uma interface/abstracção que permita adicionar integrações no futuro sem alterar completamente a aplicação.
+
+Exemplo conceptual:
+
+IntegrationProvider
+
+com possibilidade futura de:
+
+LocalProvider
+DuvionProvider
+SystemProvider
+
+Por enquanto:
+
+LocalProvider = activo
+
+DuvionProvider = preparado, mas desligado/inexistente.
+
+Não criar funcionalidades falsas.
+
+Não mostrar “Duvion” na interface do utilizador nesta fase, excepto se for necessário internamente para documentação/código.
+
+O utilizador final deve continuar a sentir que está a usar exactamente a IRIS que já conhece.
+
+OBJECTIVO DESTA FASE:
+
+Transformar a IRIS numa plataforma extensível.
+
+Hoje:
+
+IRIS → produtividade pessoal no desktop.
+
+Futuramente:
+
+IRIS → interface inteligente do Duvion.
+
+A arquitectura deve permitir essa evolução sem precisar reconstruir a aplicação.
+
+Antes de implementar:
+
+1. Analisa todo o código existente.
+2. Identifica componentes principais.
+3. Identifica funcionalidades.
+4. Identifica dependências.
+5. Identifica onde colocar o IRIS CORE.
+6. Identifica quais componentes devem permanecer intocados.
+7. Identifica riscos de regressão.
+
+Depois implementa apenas alterações arquitecturais seguras.
+
+PRINCÍPIO FUNDAMENTAL:
+
+Não construir o Duvion dentro da IRIS.
+
+Preparar a IRIS para futuramente conversar com o Duvion.
