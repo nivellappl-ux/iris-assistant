@@ -1,0 +1,39 @@
+{
+  "name": "@workspace/api-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
+    "build": "node ./build.mjs",
+    "start": "node --enable-source-maps ./dist/index.mjs",
+    "agent:dev": "export NODE_ENV=development LOG_LEVEL=error && pnpm run build && node --enable-source-maps ./dist/livekit-agent.mjs dev",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "pnpm exec esbuild src/lib/irisAi.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/irisAi.test.mjs && node --test src/lib/*.test.mjs"
+  },
+  "dependencies": {
+    "@google/genai": "^1.52.0",
+    "@livekit/agents": "^1.9.3",
+    "@livekit/rtc-node": "^1.1.0",
+    "@workspace/api-zod": "workspace:*",
+    "@workspace/db": "workspace:*",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "drizzle-orm": "catalog:",
+    "express": "^5.2.1",
+    "livekit-server-sdk": "^2.19.1",
+    "openai": "^7.27.0",
+    "pino": "^9.14.0",
+    "pino-http": "^10.5.0"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "catalog:",
+    "esbuild": "0.28.2",
+    "esbuild-plugin-pino": "^2.3.3",
+    "pino-pretty": "^13.1.3",
+    "thread-stream": "3.1.0"
+  }
+}
