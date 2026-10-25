@@ -1,0 +1,711 @@
+Quero que trabalhes no projeto IRIS que já existe neste Replit.
+
+IMPORTANTE:
+A IRIS JÁ ESTÁ IMPLEMENTADA.
+NÃO reconstruas a IRIS do zero.
+NÃO substituas a personagem atual.
+NÃO substituas o design atual.
+NÃO apagues funcionalidades existentes.
+NÃO cries uma segunda personagem.
+NÃO transformes a IRIS num simples chatbot.
+
+Quero evoluir a IRIS existente adicionando uma camada de interação por voz inspirada na arquitetura do projeto open source JARVIS de Alexandre Sajus:
+
+https://github.com/AlexandreSajus/JARVIS
+
+O projeto JARVIS utiliza o conceito:
+
+MICROFONE
+↓
+SPEECH TO TEXT
+↓
+LLM
+↓
+TEXT TO SPEECH
+↓
+RESPOSTA VISUAL / ÁUDIO
+
+Quero adaptar este conceito à IRIS existente.
+
+OBJETIVO PRINCIPAL
+
+Transformar a IRIS numa personagem de desktop realmente interativa.
+
+A IRIS deve conseguir:
+
+1. ouvir o utilizador
+2. detectar quando o utilizador terminou de falar
+3. transformar voz em texto
+4. enviar o texto para o cérebro/LLM que a IRIS já utiliza
+5. receber a resposta
+6. transformar a resposta em voz
+7. sincronizar a voz com a personagem
+8. alterar a expressão/animação da IRIS de acordo com o estado da conversa
+9. mostrar visualmente que está a ouvir
+10. mostrar visualmente que está a pensar
+11. mostrar visualmente que está a falar
+12. voltar ao estado idle quando terminar
+
+NÃO quero simplesmente adicionar um botão “falar”.
+
+Quero criar um verdadeiro ciclo de interação:
+
+IDLE
+↓
+LISTENING
+↓
+THINKING
+↓
+SPEAKING
+↓
+IDLE
+
+A personagem deve comunicar estes estados visualmente.
+
+==================================================
+
+1. PRIMEIRO ANALISA O PROJETO ATUAL
+    ==================================================
+
+Antes de alterar qualquer código:
+
+* analisa toda a estrutura atual
+* identifica onde está implementada a personagem
+* identifica o sistema atual de animações
+* identifica o sistema de chat
+* identifica o sistema atual de IA
+* identifica o sistema de áudio
+* identifica o frontend
+* identifica o backend
+* identifica como a IRIS mantém o estado
+* identifica se já existe algum sistema de TTS/STT
+* identifica como a personagem recebe eventos
+
+Não alteres nada antes de compreender a arquitetura atual.
+
+Cria primeiro uma pequena documentação interna explicando:
+
+IRIS CURRENT ARCHITECTURE
+VOICE ARCHITECTURE
+CHARACTER ARCHITECTURE
+AI ARCHITECTURE
+AUDIO ARCHITECTURE
+
+==================================================
+2. NÃO COPIAR O JARVIS INTEGRALMENTE
+
+Não faças simplesmente clone do repositório JARVIS.
+
+Quero aproveitar apenas os conceitos necessários.
+
+O JARVIS será usado como referência arquitetural para:
+
+* captura de voz
+* speech-to-text
+* processamento
+* text-to-speech
+* fluxo de estados
+* comunicação entre voz e interface
+
+A IRIS continua sendo o produto principal.
+
+==================================================
+3. SPEECH TO TEXT
+
+Implementa uma camada de Speech-to-Text desacoplada da IRIS.
+
+Cria uma interface semelhante a:
+
+SpeechRecognitionProvider
+
+para permitir trocar o fornecedor futuramente.
+
+A arquitetura deve permitir utilizar:
+
+* Whisper
+* faster-whisper
+* Deepgram
+* outros providers compatíveis
+
+Não deixar o sistema dependente permanentemente de apenas um fornecedor.
+
+Se já existir STT na aplicação, reutiliza-o e melhora-o em vez de criar outro.
+
+==================================================
+4. VOICE ACTIVITY DETECTION
+
+A IRIS deve perceber quando o utilizador começou e terminou de falar.
+
+Não quero obrigar o utilizador a clicar:
+
+“Começar a falar”
+
+e depois:
+
+“Parar”.
+
+Sempre que tecnicamente possível:
+
+microfone
+→ detectar voz
+→ gravar
+→ detectar silêncio
+→ terminar gravação
+→ STT
+
+Utiliza Voice Activity Detection.
+
+Deve existir proteção contra:
+
+* silêncio infinito
+* gravações gigantes
+* ruído
+* microfone indisponível
+* permissões negadas
+* erro de STT
+
+==================================================
+5. TEXT TO SPEECH
+
+Cria também uma camada:
+
+TextToSpeechProvider
+
+para que a IRIS possa utilizar diferentes motores.
+
+A arquitetura deve permitir:
+
+* ElevenLabs
+* OpenAI TTS
+* Piper
+* browser/native TTS
+* outros providers
+
+Não prender a aplicação a apenas um fornecedor.
+
+Se já existir TTS, reutiliza-o.
+
+==================================================
+6. A PERSONAGEM DEVE FALAR
+
+Esta é uma das partes mais importantes.
+
+Quando a IRIS estiver a falar:
+
+* a boca deve animar
+* a personagem deve mudar de estado
+* deve existir movimento natural
+* deve existir animação de fala
+* deve existir sincronização aproximada com o áudio
+
+Não quero uma personagem parada enquanto o áudio toca.
+
+Criar pelo menos estes estados visuais:
+
+IDLE
+LISTENING
+THINKING
+SPEAKING
+HAPPY
+CONFUSED
+ERROR
+SLEEPING / INACTIVE
+
+Não destruir as animações que já existem.
+
+Se a personagem já possui estados equivalentes, reutilizar esses estados.
+
+==================================================
+7. SISTEMA DE ESTADOS DA IRIS
+
+Criar um state machine central para a personagem.
+
+Exemplo:
+
+IRIS_STATE_IDLE
+IRIS_STATE_LISTENING
+IRIS_STATE_PROCESSING
+IRIS_STATE_SPEAKING
+IRIS_STATE_ERROR
+
+Fluxo normal:
+
+IDLE
+↓
+LISTENING
+↓
+PROCESSING
+↓
+SPEAKING
+↓
+IDLE
+
+Se o utilizador interromper:
+
+SPEAKING
+↓
+LISTENING
+
+Se ocorrer erro:
+
+qualquer estado
+↓
+ERROR
+↓
+IDLE
+
+O estado da personagem deve ser controlado por eventos.
+
+Exemplo conceptual:
+
+iris:setState(“listening”)
+
+iris:setState(“thinking”)
+
+iris:setState(“speaking”)
+
+iris:setState(“idle”)
+
+Não espalhar lógica de animação por dezenas de componentes.
+
+==================================================
+8. INTERRUPÇÃO
+
+Quero uma experiência natural.
+
+Se a IRIS estiver a falar e o utilizador começar a falar:
+
+* detectar a voz
+* interromper ou pausar o TTS
+* mudar para LISTENING
+* ouvir o utilizador
+* processar a nova mensagem
+
+Isto deve funcionar como uma conversa real.
+
+==================================================
+9. WAKE WORD
+
+Criar arquitetura preparada para wake word.
+
+Exemplo:
+
+“IRIS”
+
+ou
+
+“Hey IRIS”
+
+Não é obrigatório ativar wake word imediatamente se isso exigir dependências incompatíveis com o ambiente atual.
+
+Mas a arquitetura deve estar preparada para adicionar:
+
+wake word
+→ listening
+→ STT
+→ AI
+→ TTS
+
+posteriormente.
+
+==================================================
+10. CONVERSAÇÃO CONTÍNUA
+
+Não quero que cada pergunta pareça uma sessão nova.
+
+A IRIS deve manter o contexto da conversa de acordo com o sistema de memória já existente.
+
+Exemplo:
+
+Utilizador:
+“Como estão as vendas?”
+
+IRIS:
+“Estão a crescer 12%.”
+
+Utilizador:
+“E comparando com o mês passado?”
+
+A IRIS deve entender que “comparando” se refere às vendas.
+
+Não criar uma memória paralela se já existir uma memória no projeto.
+
+Integrar com a memória atual.
+
+==================================================
+11. IRIS + DUVION
+
+IMPORTANTE:
+
+A IRIS faz parte do ecossistema DUVION.
+
+Portanto, a voz deve futuramente permitir comandos como:
+
+“IRIS, mostra a situação financeira da empresa.”
+
+“IRIS, quais são as vendas deste mês?”
+
+“IRIS, existem facturas vencidas?”
+
+“IRIS, quais são os principais problemas da empresa?”
+
+“IRIS, cria um lembrete para amanhã.”
+
+“IRIS, mostra os clientes que não compram há 60 dias.”
+
+Neste momento não inventes funcionalidades do Duvion que ainda não existem.
+
+Mas cria a arquitetura para que a IRIS possa futuramente chamar ferramentas do Duvion.
+
+A arquitetura deve permitir:
+
+IRIS
+↓
+INTENT
+↓
+TOOL
+↓
+DUVION
+↓
+RESULTADO
+↓
+IRIS
+↓
+VOICE
+
+==================================================
+12. TOOL SYSTEM
+
+Criar uma arquitetura preparada para ferramentas.
+
+Exemplo:
+
+get_company_health()
+
+get_sales()
+
+get_customers()
+
+get_invoices()
+
+get_cashflow()
+
+create_task()
+
+create_reminder()
+
+search_documents()
+
+get_dashboard()
+
+Estas funções podem inicialmente ser mockadas ou ligadas às APIs existentes apenas se elas já existirem.
+
+NÃO inventar endpoints inexistentes.
+
+==================================================
+13. PERSONALIDADE
+
+Não quero que a IRIS fique com a personalidade do JARVIS.
+
+O JARVIS é apenas referência técnica.
+
+A IRIS mantém a sua própria identidade, personalidade, aparência e comportamento já definidos no projeto.
+
+A voz deve parecer que é a própria IRIS falando.
+
+==================================================
+14. ÁUDIO
+
+Criar uma camada central de áudio.
+
+Ela deve controlar:
+
+* microphone
+* recording
+* speech detection
+* STT
+* TTS
+* playback
+* interruption
+* volume
+* audio state
+
+Evitar múltiplos sistemas de áudio concorrentes.
+
+Deve existir um único AudioController.
+
+==================================================
+15. EVENT BUS
+
+Se a arquitetura atual permitir, criar um sistema simples de eventos.
+
+Exemplo:
+
+voice.started
+
+voice.stopped
+
+transcription.started
+
+transcription.completed
+
+thinking.started
+
+thinking.completed
+
+speech.started
+
+speech.completed
+
+iris.state.changed
+
+assistant.error
+
+A personagem reage a estes eventos.
+
+Exemplo:
+
+speech.started
+→ IRIS = SPEAKING
+
+speech.completed
+→ IRIS = IDLE
+
+voice.started
+→ IRIS = LISTENING
+
+thinking.started
+→ IRIS = THINKING
+
+Isso permitirá adicionar novas funcionalidades no futuro sem reescrever a personagem.
+
+==================================================
+16. UI
+
+Não modificar radicalmente a interface atual.
+
+Preservar:
+
+* personagem
+* layout
+* cores
+* identidade visual
+* dimensões
+* animações
+* componentes existentes
+
+Adicionar apenas os elementos necessários.
+
+Quero algo discreto:
+
+microfone
+estado atual
+transcrição opcional
+indicador de áudio
+
+A personagem deve continuar sendo o centro da experiência.
+
+==================================================
+17. SEGURANÇA
+
+Nunca colocar API keys diretamente no frontend.
+
+Utilizar:
+
+environment variables
+.env
+backend proxy
+server-side secrets
+
+Nunca expor:
+
+OPENAI_API_KEY
+ELEVENLABS_API_KEY
+DEEPGRAM_API_KEY
+ou outras credenciais
+
+no código enviado ao browser.
+
+==================================================
+18. FALLBACK
+
+Se o STT externo não estiver configurado:
+
+usar fallback disponível.
+
+Se TTS externo não estiver configurado:
+
+usar fallback.
+
+Se a IA estiver indisponível:
+
+a IRIS deve mostrar uma mensagem amigável e voltar ao estado IDLE.
+
+A aplicação nunca deve ficar bloqueada eternamente em:
+
+LISTENING
+
+THINKING
+
+ou
+
+SPEAKING.
+
+Criar timeouts e tratamento de erros.
+
+==================================================
+19. PERFORMANCE
+
+A IRIS deve permanecer leve.
+
+Não criar loops pesados de animação.
+
+Não processar áudio continuamente sem necessidade.
+
+Não enviar áudio para APIs quando não existe fala.
+
+As animações da personagem devem ser eficientes.
+
+==================================================
+20. LICENÇA
+
+O repositório de referência:
+
+https://github.com/AlexandreSajus/JARVIS
+
+possui licença GPL-3.0.
+
+Antes de copiar qualquer código diretamente, verifica a licença e as implicações para o projeto IRIS/Duvion.
+
+Preferência:
+
+1. estudar arquitetura
+2. implementar a mesma ideia
+3. escrever integração própria
+
+Não copiar código GPL para partes proprietárias do Duvion sem antes identificar claramente as implicações de licenciamento.
+
+==================================================
+21. IMPLEMENTAÇÃO
+
+Executa em fases.
+
+FASE 1
+Analisar a IRIS atual.
+
+FASE 2
+Criar VoiceController.
+
+FASE 3
+Criar SpeechRecognitionProvider.
+
+FASE 4
+Criar TextToSpeechProvider.
+
+FASE 5
+Criar IrisStateMachine.
+
+FASE 6
+Ligar estados da personagem aos eventos de voz.
+
+FASE 7
+Implementar conversa por voz.
+
+FASE 8
+Implementar interrupção.
+
+FASE 9
+Preparar wake word.
+
+FASE 10
+Preparar integração com ferramentas Duvion.
+
+Não tentar fazer tudo de uma vez se isso aumentar o risco de quebrar o projeto.
+
+Depois de cada fase:
+
+* executar testes
+* verificar console
+* verificar frontend
+* verificar backend
+* verificar animações
+* corrigir erros
+* garantir que funcionalidades anteriores continuam funcionando.
+
+==================================================
+22. CRITÉRIO FINAL
+
+No final quero conseguir:
+
+abrir a IRIS
+
+↓
+
+a personagem aparece normalmente
+
+↓
+
+falo com ela
+
+↓
+
+IRIS muda para LISTENING
+
+↓
+
+minha voz é convertida para texto
+
+↓
+
+IRIS muda para THINKING
+
+↓
+
+o cérebro gera a resposta
+
+↓
+
+IRIS muda para SPEAKING
+
+↓
+
+a personagem fala e anima
+
+↓
+
+termina
+
+↓
+
+IRIS volta para IDLE
+
+Tudo isto deve acontecer dentro da IRIS EXISTENTE.
+
+Não quero uma nova aplicação separada.
+
+Não quero uma segunda personagem.
+
+Não quero uma interface JARVIS separada.
+
+Quero:
+
+JARVIS como REFERÊNCIA DE ARQUITETURA
+
+IRIS como PERSONAGEM E PRODUTO PRINCIPAL
+
+DUVION como ECOSSISTEMA EMPRESARIAL.
+
+Antes de terminar, apresenta:
+
+1. arquivos criados
+2. arquivos modificados
+3. dependências adicionadas
+4. variáveis de ambiente necessárias
+5. arquitetura implementada
+6. testes realizados
+7. problemas encontrados
+8. próximos passos
+
+E, principalmente:
+
+NÃO QUEBRES A IRIS QUE JÁ EXISTE.
