@@ -1,0 +1,3 @@
+- [Rust toolchain on Replit](replit-rust-toolchain.md) — unset the runtime audit loader for rustup Cargo/Rust commands when the compiler fails before compiling.
+- [IRIS integration boundary](iris-integration-boundary.md) — LiveKit voice is development-only; keep Duvion disconnected, OpenAI config untouched, and local data separate.
+- [IRIS feature scope](iris-feature-scope.md) — Keep chat, voice, settings, help, Mochi, and the island; preserve but do not expose legacy productivity records.
