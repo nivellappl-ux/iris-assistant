@@ -1,0 +1,44 @@
+name: IRIS desktop builds
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "artifacts/coucou-assistant/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/iris-desktop.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            command: desktop:build:windows
+          - os: macos-latest
+            command: desktop:build:macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build native installer
+        run: pnpm --filter @workspace/coucou-assistant run ${{ matrix.command }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iris-${{ matrix.os }}
+          path: artifacts/coucou-assistant/src-tauri/target/release/bundle/**
+          if-no-files-found: error
