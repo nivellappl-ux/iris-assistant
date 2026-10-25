@@ -1,0 +1,211 @@
+IMPLEMENTAÇÃO DA IRIS VOICE — LIVEKIT AGENTS
+
+1. OBJECTIVO
+
+Implementar no projecto existente Duvion a camada de voz em tempo real da IRIS, utilizando o repositório oficial:
+
+https://github.com/livekit/agents.git
+
+A IRIS deve funcionar como uma assistente de voz semelhante à Siri, permitindo ao utilizador falar naturalmente, ouvir respostas, interromper a assistente e continuar a conversa sem ter de escrever.
+
+Não reconstruas o Duvion. Não substituas o projecto por uma aplicação de demonstração do LiveKit. Integra a tecnologia no sistema existente.
+
+2. REGRA OBRIGATÓRIA: AUDITAR ANTES DE ALTERAR
+
+Antes de escrever ou modificar código:
+
+1. Analisa a estrutura completa do repositório Duvion.
+2. Identifica a framework frontend, backend, sistema de autenticação, base de dados, rotas, componentes e arquitectura atual.
+3. Identifica a implementação existente da IRIS, incluindo interface, microfone, áudio, chat, estado de conversa e integrações de IA.
+4. Verifica a versão de Node.js, Python e gestores de pacotes disponíveis.
+5. Examina os ficheiros de configuração e os scripts de execução existentes.
+6. Confirma como o projecto é executado no Replit e quais as limitações do ambiente.
+7. Apresenta um plano de integração compatível com a arquitectura encontrada.
+
+Não suponhas que existe um backend Python. Se o Duvion utiliza Node.js, mantém o backend atual e implementa o agente de voz como serviço separado apenas se necessário.
+
+Não substituas dependências, não elimines ficheiros e não alteres configurações globais sem justificação técnica.
+
+3. REPOSITÓRIO LIVEKIT
+
+Utiliza o repositório oficial:
+
+https://github.com/livekit/agents.git
+
+Consulta a documentação oficial:
+https://docs.livekit.io/agents/
+
+Consulta exemplos oficiais de agentes de voz, autenticação, sessões, frontend e ferramentas.
+
+Não clones cegamente o monorepositório inteiro para dentro da aplicação em produção. Escolhe a integração mínima adequada e fixa versões compatíveis das dependências.
+
+Se precisares de consultar ou clonar o repositório, fá-lo numa pasta temporária ou de referência, preservando os ficheiros existentes do Duvion.
+
+4. FUNCIONALIDADES DA IRIS
+
+Implementa as seguintes capacidades:
+
+* Iniciar uma conversa por voz através do botão de microfone já existente, se disponível.
+* Captar a voz do utilizador através do microfone, com autorização explícita do navegador.
+* Responder com áudio natural e reprodução progressiva, quando suportada pelo motor escolhido.
+* Reconhecer o final de uma intervenção do utilizador.
+* Detetar interrupções e parar a reprodução quando o utilizador voltar a falar.
+* Manter o contexto da conversa durante a sessão.
+* Permitir alternar entre texto e voz.
+* Apresentar estados visuais de escuta, processamento, resposta e erro.
+* Permitir terminar a conversa e desligar o microfone.
+* Tratar falhas de rede, permissões recusadas, ausência de dispositivos de áudio e indisponibilidade do serviço.
+* Garantir que o áudio não fica permanentemente ativo depois de terminar a sessão.
+
+Não simules funcionalidades que não estejam realmente implementadas.
+
+5. ARQUITECTURA
+
+Implementa uma arquitectura compatível com o sistema existente:
+
+Frontend Duvion/IRIS
+→ ligação de áudio em tempo real via WebRTC
+→ servidor LiveKit
+→ agente LiveKit
+→ modelos de reconhecimento de fala, inteligência e síntese de voz
+→ ferramentas autorizadas do Duvion.
+
+Utiliza o SDK oficial de frontend apropriado à framework encontrada e o SDK oficial LiveKit Agents para Python ou Node.js, conforme a compatibilidade.
+
+Se for criado um serviço de agente separado, mantém-no isolado do backend principal, com dependências e comandos de execução próprios.
+
+Não exponhas chaves secretas no frontend.
+
+6. CONFIGURAÇÃO E SEGURANÇA
+
+Utiliza variáveis de ambiente, sem valores secretos hardcoded:
+
+LIVEKIT_URL=
+LIVEKIT_API_KEY=
+LIVEKIT_API_SECRET=
+
+Adiciona apenas as restantes variáveis exigidas pelo modelo ou fornecedor realmente selecionado.
+
+Implementa um endpoint autenticado no backend existente para emitir tokens temporários de acesso às salas LiveKit.
+
+Requisitos:
+
+* Validar a sessão do utilizador.
+* Associar cada sessão de voz ao utilizador autenticado.
+* Verificar a autorização antes de emitir tokens.
+* Limitar a duração e as permissões dos tokens.
+* Impedir que utilizadores obtenham acesso a salas ou dados de outras empresas.
+* Nunca devolver LIVEKIT_API_SECRET ao frontend.
+* Aplicar limites de utilização e validação de pedidos.
+* Não registar chaves, credenciais ou conteúdo sensível desnecessário.
+* Não enfraquecer a autenticação existente para facilitar os testes.
+
+Se o sistema atual de autenticação estiver instável, documenta o problema e preserva-o. Não o substituas nesta tarefa.
+
+7. INTELIGÊNCIA E MODELOS OPEN SOURCE
+
+A arquitectura deve permitir utilizar modelos open source para reconhecimento de voz, processamento de linguagem e síntese de voz.
+
+Antes de selecionar modelos:
+
+1. Confirma as integrações oficiais e as versões compatíveis.
+2. Avalia suporte para português, incluindo português europeu e português de Angola.
+3. Verifica os requisitos de CPU, RAM, GPU e armazenamento.
+4. Verifica se o modelo pode ser executado no ambiente de alojamento atual.
+5. Confirma a licença comercial de cada modelo.
+6. Distingue execução local, alojamento próprio e serviços externos pagos.
+
+Não pressuponhas que o LiveKit Cloud é gratuito ou que todos os modelos disponíveis dispensam créditos.
+
+Não tornes OpenAI obrigatório. Se os modelos locais não forem viáveis no Replit, apresenta alternativas e explica as limitações antes de ativar serviços pagos.
+
+8. INTEGRAÇÃO COM O DUVION
+
+A IRIS deve ser preparada para consultar e operar os módulos empresariais através de funções explícitas e autorizadas.
+
+Exemplos de intenções futuras:
+
+* Consultar a situação financeira.
+* Consultar vendas e stock.
+* Resumir indicadores da empresa.
+* Procurar clientes e fornecedores autorizados.
+* Preparar relatórios.
+
+Não inventes dados empresariais.
+
+Não ligues ferramentas a tabelas ou endpoints sem os identificar primeiro.
+
+As operações de leitura devem respeitar as permissões do utilizador e o isolamento entre empresas. As operações que alteram dados, movimentam dinheiro, enviam comunicações ou executam ações irreversíveis devem exigir confirmação explícita antes da execução.
+
+Nesta primeira fase, implementa apenas as ferramentas para as quais existam endpoints reais e seguros. As restantes devem ficar identificadas como pendentes, sem respostas fictícias.
+
+9. PRESERVAR O DESIGN
+
+Mantém integralmente a identidade visual atual do Duvion e da IRIS:
+
+* Layout, tipografia, cores, ícones e imagens.
+* Navegação, sidebar e dashboard.
+* Componentes existentes da IRIS.
+* Responsividade em desktop e dispositivos móveis.
+* Autenticação, rotas e funcionalidades atuais.
+
+Não redesenhes o dashboard.
+Não cries uma interface genérica de chatbot.
+Não substituas componentes existentes por versões de demonstração.
+
+Adiciona apenas os estados e controlos de voz necessários, respeitando os componentes atuais.
+
+10. TESTES OBRIGATÓRIOS
+
+Executa e documenta os testes aplicáveis:
+
+* O Duvion inicia sem erros.
+* O login e a sessão existentes continuam a funcionar.
+* O frontend consegue obter um token válido através do backend.
+* Um utilizador autorizado consegue ligar-se à sessão de voz.
+* Um utilizador não autenticado não consegue obter um token.
+* O microfone pede autorização e respeita a decisão do utilizador.
+* A conversa transmite áudio corretamente.
+* O agente consegue responder com áudio.
+* As interrupções são tratadas corretamente.
+* A conversa termina e liberta os recursos de áudio.
+* As falhas de ligação apresentam mensagens claras.
+* Os testes de isolamento entre empresas e permissões passam.
+* O build e os testes existentes continuam a passar.
+
+Não declares testes aprovados sem os executar. Se faltarem credenciais ou serviços externos, identifica os testes bloqueados.
+
+11. EXECUÇÃO POR FASES
+
+Fase A — Auditoria e plano técnico.
+
+Fase B — Instalação das dependências mínimas e configuração segura.
+
+Fase C — Implementação do agente de voz e emissão de tokens.
+
+Fase D — Integração com a interface existente da IRIS.
+
+Fase E — Seleção e configuração dos modelos de voz.
+
+Fase F — Testes, correção de erros e documentação.
+
+Conclui cada fase antes de avançar para alterações arriscadas. Não elimines código funcional apenas para simplificar a implementação.
+
+12. RELATÓRIO FINAL
+
+No final, apresenta:
+
+1. Arquitectura original identificada.
+2. Ficheiros criados e alterados.
+3. Dependências adicionadas e respetivas versões.
+4. Variáveis de ambiente necessárias.
+5. Comandos de execução no Replit.
+6. Credenciais ou serviços que ainda faltam configurar.
+7. Testes executados e resultados reais.
+8. Funcionalidades concluídas e pendentes.
+9. Custos potenciais e limitações dos modelos selecionados.
+10. Procedimento para testar uma conversa real por voz.
+
+Critério de conclusão: a IRIS deve conseguir estabelecer uma sessão real de voz através do LiveKit, captar áudio, processar uma intervenção e devolver uma resposta falada, mantendo a interface e a autenticação atuais do Duvion.
+
+Começa pela auditoria. Não afirmes que a integração está concluída antes de testar o fluxo completo.
