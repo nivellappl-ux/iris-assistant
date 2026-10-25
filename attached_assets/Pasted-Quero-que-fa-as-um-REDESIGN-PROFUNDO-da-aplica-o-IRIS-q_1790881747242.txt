@@ -1,0 +1,971 @@
+Quero que faças um REDESIGN PROFUNDO da aplicação IRIS que já existe neste projeto.
+
+Não quero apenas melhorar cores, espaçamentos, border-radius ou adicionar algumas animações.
+
+Quero transformar a IRIS numa experiência de produto real, premium, viva e memorável.
+
+A aplicação já possui funcionalidades e uma personagem/Mochi existente. PRESERVA o que já funciona e trabalha sobre a base atual.
+
+O objetivo é:
+
+MELHOR UX + NOVA IDENTIDADE VISUAL + PERSONALIDADE + MICROINTERAÇÕES + MOCHI VIVA + DYNAMIC ISLAND MAIS EXPRESSIVA
+
+Antes de alterar o código:
+
+Analisa toda a estrutura atual.
+Identifica as funcionalidades existentes.
+Identifica como a Mochi está implementada.
+Identifica como a Dynamic Island está implementada.
+Identifica os componentes reutilizáveis.
+Não apagues dados nem funcionalidades existentes.
+Não reconstruas a aplicação desnecessariamente.
+Faz o redesign sobre a arquitetura atual sempre que possível.
+1. NOVA VISÃO DA IRIS
+
+A IRIS NÃO deve parecer:
+
+uma To-Do List;
+um dashboard SaaS;
+um chatbot;
+uma cópia de ChatGPT;
+um simples widget;
+um projeto genérico criado por IA.
+
+A IRIS deve parecer:
+
+uma pequena presença pessoal que vive no computador.
+
+Ela deve ser uma camada pessoal de produtividade que ajuda o utilizador a capturar, organizar e executar aquilo que acontece durante o trabalho.
+
+A experiência deve transmitir:
+
+inteligência;
+personalidade;
+proximidade;
+elegância;
+tecnologia;
+calma;
+diversão subtil;
+qualidade premium.
+
+A primeira impressão deve ser:
+
+“Isto é um produto próprio.”
+
+e não:
+
+“Isto é mais uma aplicação de tarefas.”
+
+2. DIREÇÃO VISUAL
+
+Usa como referências de qualidade os princípios de:
+
+Apple;
+Raycast;
+Linear;
+Arc;
+aplicações desktop premium.
+
+NÃO copies nenhuma delas.
+
+Quero apenas:
+
+simplicidade;
+precisão;
+hierarquia;
+excelentes microinterações;
+tipografia forte;
+movimento elegante;
+pouca informação visual desnecessária.
+
+Evitar:
+
+excesso de cards;
+excesso de gradientes;
+glassmorphism exagerado;
+sombras pesadas;
+interfaces cheias;
+emojis como elementos principais;
+cores excessivas;
+componentes visualmente genéricos.
+3. IDENTIDADE VISUAL
+
+A base da IRIS deve continuar escura.
+
+Utilizar principalmente:
+
+preto profundo;
+charcoal;
+cinza escuro;
+branco suave.
+
+Adicionar UMA cor de identidade da IRIS, sofisticada, como um violeta/lilás/azul elétrico subtil.
+
+A cor deve ser usada principalmente em:
+
+estados ativos;
+foco;
+voz;
+indicadores;
+pequenos detalhes;
+interações;
+elementos associados à Mochi.
+
+Não transformar a aplicação num festival de cores.
+
+4. TIPOGRAFIA
+
+Usar:
+
+Inter;
+SF Pro;
+Geist;
+
+ou equivalente disponível.
+
+A tipografia deve ser:
+
+limpa;
+moderna;
+extremamente legível.
+
+Poucos tamanhos.
+
+Boa hierarquia.
+
+Muito espaço negativo.
+
+Não utilizar texto desnecessário.
+
+5. DYNAMIC ISLAND
+
+A Dynamic Island é uma das partes mais importantes da IRIS.
+
+Quero que a redesenhes profundamente.
+
+Ela não deve parecer simplesmente uma caixa preta flutuante.
+
+Deve parecer uma pequena entidade viva dentro do desktop.
+
+Estado minimizado
+
+Muito pequena e discreta.
+
+Exemplo conceptual:
+
+[ Mochi ● ]
+
+Hover
+
+Expande ligeiramente.
+
+Active
+
+Expande para apresentar ações rápidas.
+
+Expanded
+
+Pode apresentar:
+
+captura rápida;
+tarefas;
+estado atual;
+comandos;
+voz;
+focus.
+
+A expansão deve parecer uma transformação da mesma superfície.
+
+NÃO abrir como uma janela tradicional.
+
+Quero movimento orgânico.
+
+6. ESTADOS DA DYNAMIC ISLAND
+
+Criar estados visuais claros:
+
+IDLE
+
+Minimalista.
+
+Mochi tranquila.
+
+HOVER
+
+Pequena expansão.
+
+ACTIVE
+
+Ações rápidas.
+
+VOICE
+
+Microfone ativo.
+
+Mochi reage.
+
+Mostrar "Listening..." de forma elegante.
+
+PROCESSING
+
+Mochi entra em estado de processamento.
+
+SUCCESS
+
+Confirmação da ação.
+
+FOCUS
+
+Transforma-se num pequeno Focus Timer.
+
+NOTIFICATION
+
+Expansão temporária para informação importante.
+
+7. QUICK CAPTURE
+
+A IRIS precisa ter uma forma extremamente rápida de capturar informação.
+
+Atalho:
+
+CTRL + SPACE no Windows
+
+CMD + SPACE no macOS, se tecnicamente possível sem conflito com o sistema.
+
+Abrir:
+
+What's on your mind?
+
+O utilizador escreve:
+
+“Enviar proposta amanhã às 10.”
+
+A aplicação deve interpretar e transformar em uma ação/tarefa usando a lógica existente.
+
+Não criar formulários complexos.
+
+8. IRIS INBOX
+
+Criar/aperfeiçoar uma Inbox para aquilo que o utilizador envia para a IRIS.
+
+Exemplos:
+
+ACTION
+Enviar proposta amanhã.
+
+IDEA
+Criar plataforma de supermercados.
+
+REFERENCE
+Link de um site.
+
+DOCUMENT
+PDF recebido.
+
+NOTE
+Nota rápida.
+
+A IRIS deve ajudar a organizar a informação sem obrigar o utilizador a fazer isso manualmente.
+
+9. CONTEXTOS / PROJECTS
+
+Permitir que elementos estejam relacionados com contextos/projetos.
+
+Exemplo:
+
+TELEFYA
+
+Tasks
+
+Preparar proposta
+Follow-up
+
+Documents
+
+Proposal.pdf
+
+Links
+
+telefya.com
+
+Notes
+
+Expansão B2B
+
+A experiência deve mostrar contexto sem criar um sistema empresarial complexo.
+
+10. HOME
+
+A Home NÃO deve parecer um dashboard.
+
+Deve parecer pessoal.
+
+Exemplo:
+
+Good evening.
+
+Here's what's waiting for you.
+
+TODAY
+
+3 things to do
+
+Finalizar proposta
+Enviar documento
+Ligar ao cliente
+UP NEXT
+
+A próxima coisa importante.
+
+OVERDUE
+
+Se existir algo atrasado, mostrar de forma clara mas não agressiva.
+
+Quando não houver tarefas:
+
+Mochi is taking the day off.
+
+ou outra mensagem curta com personalidade.
+
+11. TASK EXPERIENCE
+
+As tarefas devem ser simples e elegantes.
+
+Cada tarefa pode apresentar:
+
+checkbox;
+título;
+data;
+hora;
+prioridade;
+estado.
+
+Ao concluir:
+
+checkbox anima;
+texto muda suavemente;
+item desaparece ou passa para concluído;
+Mochi reage;
+efeito sonoro curto se existir suporte.
+12. FOCUS MODE
+
+Criar/melhorar um Focus Mode.
+
+Ao iniciar:
+
+A interface simplifica.
+
+Mostrar:
+
+MOCHI
+
+45:00
+
+Finish the proposal.
+
+Poucos elementos.
+
+A sensação deve ser de concentração.
+
+13. VOICE
+
+A voz deve continuar sendo para comandos da aplicação.
+
+NÃO transformar a IRIS numa IA conversacional geral.
+
+Comandos como:
+
+“IRIS, adicionar tarefa.”
+
+“IRIS, mostrar tarefas de hoje.”
+
+“IRIS, concluir proposta.”
+
+“IRIS, adiar para amanhã.”
+
+“IRIS, iniciar foco.”
+
+Quando o microfone estiver ativo:
+
+Mochi reage;
+mostrar Listening;
+adicionar ondas de áudio subtis;
+criar feedback visual.
+
+Quando terminar:
+
+processar;
+mostrar resultado;
+voltar ao estado anterior.
+14. MOCHI — NÃO SUBSTITUIR A PERSONAGEM
+
+A personagem Mochi JÁ EXISTE.
+
+É FUNDAMENTAL:
+
+NÃO substituir a Mochi.
+
+NÃO criar uma nova personagem.
+
+NÃO mudar radicalmente o design dela.
+
+Quero EVOLUIR a personagem existente.
+
+Transformá-la de um asset visual numa personagem digital viva.
+
+15. MOCHI — PERSONALIDADE
+
+A Mochi deve transmitir:
+
+curiosidade;
+inteligência;
+simpatia;
+leveza;
+pequena dose de humor;
+calma;
+energia quando necessário.
+
+Ela não deve parecer infantil.
+
+Também não deve estar constantemente a fazer movimentos.
+
+A personalidade deve aparecer através de pequenos comportamentos.
+
+16. ARTICULAÇÕES DA MOCHI
+
+Se tecnicamente possível, separar/analisar partes da personagem:
+
+cabeça;
+corpo;
+olhos;
+pupilas;
+boca;
+braços;
+mãos;
+pernas;
+orelhas;
+acessórios.
+
+Permitir movimentos independentes.
+
+Quero evitar:
+
+“imagem inteira mexendo.”
+
+Quero:
+
+“personagem mexendo.”
+
+Se o asset atual for uma imagem única, verifica primeiro a melhor forma de animá-lo sem destruir a identidade visual.
+
+Se for SVG/Lottie ou outro formato adequado, aproveitar a estrutura existente.
+
+17. PRINCÍPIOS DE ANIMAÇÃO
+
+Aplicar:
+
+ANTICIPATION
+
+Pequena preparação antes de um movimento.
+
+EASE IN / EASE OUT
+
+Movimentos naturais.
+
+FOLLOW-THROUGH
+
+Partes pequenas continuam o movimento por alguns milissegundos.
+
+SECONDARY MOTION
+
+Braços, orelhas, acessórios etc. acompanham o corpo.
+
+SQUASH & STRETCH
+
+Utilizar muito subtilmente quando fizer sentido.
+
+Nada exagerado.
+
+18. IDLE ANIMATIONS
+
+A Mochi nunca deve parecer completamente congelada.
+
+Criar vários comportamentos:
+
+respiração;
+piscar;
+olhar para os lados;
+mexer a cabeça;
+alterar ligeiramente a postura;
+pequenos movimentos corporais;
+bocejar ocasionalmente;
+olhar para o cursor.
+
+Não repetir exatamente a mesma animação em loop.
+
+Criar pequenas variações controladas.
+
+19. OLHOS
+
+Se possível, fazer os olhos/pupilas acompanhar suavemente o cursor.
+
+Quando o utilizador passa o cursor:
+
+Mochi olha.
+
+Quando a IRIS processa:
+
+Mochi muda o olhar.
+
+Quando está parada:
+
+Mochi pode olhar ocasionalmente para outro lado.
+
+Não exagerar.
+
+Não criar um efeito assustador.
+
+20. BLINK
+
+Criar blinking natural.
+
+Evitar simplesmente:
+
+“piscar a cada X segundos”.
+
+Usar pequenas variações.
+
+Possíveis padrões:
+
+blink normal;
+dois blinks rápidos;
+olhos fechados durante uma reação.
+
+Tudo subtil.
+
+21. EXPRESSÕES
+
+Criar estados:
+
+IDLE
+
+LISTENING
+
+THINKING
+
+HAPPY
+
+SUCCESS
+
+FOCUS
+
+CONFUSED
+
+ERROR
+
+SLEEPING
+
+Cada estado deve possuir comportamento visual próprio.
+
+22. REAÇÕES
+Criar tarefa
+
+Mochi percebe a ação e reage positivamente.
+
+Concluir tarefa
+
+Mochi pode:
+
+saltar ligeiramente;
+levantar os braços;
+fazer pequena celebração;
+voltar ao idle.
+Erro
+
+Pequena reação de confusão.
+
+Microfone
+
+Mochi entra imediatamente em Listening.
+
+Focus
+
+Mochi muda para postura concentrada.
+
+Sem tarefas
+
+Mochi pode relaxar/dormir.
+
+23. TRANSIÇÕES DE ESTADO
+
+Não fazer mudanças instantâneas.
+
+Exemplo:
+
+IDLE
+
+↓
+
+percebe interação
+
+↓
+
+movimento de atenção
+
+↓
+
+LISTENING
+
+↓
+
+THINKING
+
+↓
+
+SUCCESS
+
+↓
+
+IDLE
+
+Cada estado deve ter uma transição natural.
+
+24. FÍSICA
+
+Adicionar física subtil quando fizer sentido.
+
+Exemplos:
+
+orelhas;
+cabelo;
+acessórios;
+braços;
+elementos soltos.
+
+Quando o corpo se move:
+
+essas partes acompanham com pequeno atraso.
+
+A física deve ser leve.
+
+Não transformar a aplicação num jogo.
+
+25. MOCHI + DYNAMIC ISLAND
+
+A Mochi deve estar profundamente integrada na Dynamic Island.
+
+A ilha é o ambiente da Mochi.
+
+Quando a ilha expande:
+
+Mochi reage.
+
+Quando diminui:
+
+Mochi adapta-se.
+
+Quando entra em Voice:
+
+Mochi entra em Listening.
+
+Quando entra em Focus:
+
+Mochi entra em Focus.
+
+Quando recebe uma tarefa:
+
+Mochi reage.
+
+Quando fica idle:
+
+Mochi descansa.
+
+26. MICROINTERAÇÕES
+
+Adicionar microinterações em toda a experiência:
+
+hover;
+click;
+task created;
+task completed;
+voice;
+notifications;
+focus;
+opening/closing;
+drag;
+menus;
+estados vazios.
+
+Tudo deve ter feedback.
+
+Mas:
+
+A interface deve parecer viva, não barulhenta.
+
+27. EFEITOS VISUAIS
+
+Utilizar de forma muito controlada:
+
+partículas;
+pequenos brilhos;
+glow;
+ondas de áudio;
+pequenos círculos;
+motion trails;
+partículas de sucesso.
+
+Nunca exagerar.
+
+A estética deve continuar premium.
+
+28. SOM
+
+Se já existir suporte:
+
+Adicionar sons discretos para:
+
+task created;
+task completed;
+notification;
+voice activated;
+focus started.
+
+Sincronizar som e animação da Mochi.
+
+Exemplo:
+
+Task Complete:
+
+som + movimento + pequena reação
+
+Tudo deve parecer uma única interação.
+
+29. SISTEMA DE ANIMAÇÃO
+
+Criar um sistema reutilizável para a Mochi.
+
+Por exemplo:
+
+MochiState
+
+idle
+listening
+thinking
+success
+focus
+error
+sleeping
+
+E funções reutilizáveis:
+
+blink()
+lookAt()
+react()
+celebrate()
+wakeUp()
+sleep()
+listen()
+think()
+focus()
+
+Os eventos da aplicação devem controlar esses estados.
+
+30. PERFORMANCE
+
+A Mochi pode ter muita vida sem deixar a aplicação pesada.
+
+Priorizar:
+
+CSS transforms;
+GPU-friendly animations;
+requestAnimationFrame apenas quando necessário;
+componentes leves;
+evitar loops desnecessários;
+pausar animações quando a aplicação não estiver visível;
+reduzir efeitos em máquinas menos potentes.
+
+A IRIS precisa continuar rápida.
+
+31. NÃO TRANSFORMAR TUDO EM CARDS
+
+Muito importante.
+
+Não criar:
+
+[ Card ]
+
+[ Card ]
+
+[ Card ]
+
+para toda a interface.
+
+Usar:
+
+listas;
+tipografia;
+espaço;
+linhas;
+pequenas superfícies;
+ícones;
+movimento.
+
+Cards somente quando fizerem sentido.
+
+32. DESIGN SYSTEM
+
+Criar um sistema visual consistente:
+
+cores;
+typography;
+spacing;
+radius;
+shadows;
+transitions;
+buttons;
+inputs;
+task items;
+menus;
+overlays;
+Dynamic Island;
+Mochi states.
+
+A aplicação inteira deve parecer um único produto.
+
+33. RESPONSIVIDADE
+
+Garantir funcionamento em:
+
+Windows;
+macOS;
+diferentes resoluções;
+diferentes tamanhos de janela.
+
+A Dynamic Island não pode cortar conteúdo.
+
+Não pode existir overflow horizontal.
+
+A Mochi deve adaptar-se corretamente.
+
+34. PERSONALIDADE DA IRIS
+
+Evitar textos genéricos como:
+
+“Welcome to your productivity dashboard.”
+
+Preferir mensagens curtas e humanas.
+
+Exemplos:
+
+“Good morning.”
+
+“Ready?”
+
+“I'm listening.”
+
+“Got it.”
+
+“That's done.”
+
+“Take a breath.”
+
+“Nothing waiting for you.”
+
+“Back to work?”
+
+Não exagerar.
+
+35. FILOSOFIA DO PRODUTO
+
+A IRIS deve seguir esta lógica:
+
+CAPTURE → ORGANIZE → ACT → COMPLETE
+
+O utilizador não deve sentir que está a gerir uma aplicação.
+
+Deve sentir que está simplesmente a trabalhar e que a IRIS está a ajudá-lo.
+
+36. O QUE NÃO FAZER
+
+NÃO:
+
+substituir a Mochi;
+redesenhar completamente a personagem;
+apagar funcionalidades;
+remover dados;
+transformar a aplicação num chatbot;
+transformar tudo em cards;
+usar gradientes excessivos;
+usar glassmorphism exagerado;
+adicionar efeitos sem função;
+criar dashboards empresariais;
+criar páginas apenas para preencher espaço;
+alterar a lógica funcional sem necessidade;
+sacrificar performance.
+37. TESTE FINAL
+
+Depois de implementar:
+
+Testa todas as funcionalidades existentes.
+
+Testa:
+
+criar tarefa;
+concluir;
+editar;
+apagar;
+voz;
+microfone;
+Dynamic Island;
+Focus;
+navegação;
+persistência dos dados;
+estados da Mochi;
+animações;
+diferentes tamanhos de janela.
+
+Verifica também:
+
+console errors;
+broken states;
+overflow;
+elementos cortados;
+animações travadas;
+performance;
+regressões.
+
+Corrige todos os problemas encontrados.
+
+RESULTADO FINAL
+
+Quando alguém abrir a aplicação, não quero que pense:
+
+“É uma aplicação de tarefas.”
+
+Quero que pense:
+
+“O que é isto?”
+
+Depois:
+
+“Esta personagem está viva.”
+
+E finalmente:
+
+“Quero deixar isto no meu desktop.”
+
+A IRIS deve ter uma identidade reconhecível.
+
+A Dynamic Island deve parecer viva.
+
+A Mochi deve parecer uma personagem real dentro do sistema.
+
+A interface deve ser minimalista, mas não vazia.
+
+A animação deve ser sofisticada, mas não exagerada.
+
+A experiência deve ser tecnológica, mas humana.
+
+O resultado final deve parecer um produto que poderia ser lançado comercialmente.
+
+Não quero apenas um redesign. Quero que transformes a IRIS numa experiência.
