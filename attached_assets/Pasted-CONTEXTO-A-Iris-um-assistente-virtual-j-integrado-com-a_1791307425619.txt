@@ -1,0 +1,36 @@
+CONTEXTO
+A Iris é um assistente virtual já integrado com a API da OpenAI. A chave da OpenAI já foi fornecida e está configurada. Neste momento não há créditos, por isso as respostas falham. Preciso de uma solução TEMPORÁRIA, apenas para testes, usando uma API gratuita de outro fornecedor.
+
+REGRA PRINCIPAL (NÃO NEGOCIÁVEL)
+NÃO modifiques, NÃO removas, NÃO substituas, NÃO renomeies, NÃO movas e NÃO sobrescrevas a configuração, a variável, o ficheiro, o código ou a chave da OpenAI que já existem. Tudo o que está relacionado com a OpenAI deve ficar exatamente como está. Não apagues comentários, imports, funções ou ficheiros ligados à OpenAI.
+
+TAREFA
+Adiciona, ao lado da integração existente, um segundo fornecedor de IA gratuito, de forma isolada e reversível:
+
+1. Fornecedor temporário: [NOME DO FORNECEDOR, ex.: Google Gemini / Groq / OpenRouter]
+2. Base URL: [URL DA API]
+3. Modelo: [NOME DO MODELO, ex.: gemini-2.0-flash / llama-3.3-70b-versatile]
+4. Chave: será fornecida por mim em variável de ambiente. NÃO escrevas a chave diretamente no código.
+
+IMPLEMENTAÇÃO
+- Cria uma variável nova, separada da da OpenAI: TEST_API_KEY (e, se necessário, TEST_API_BASE_URL e TEST_API_MODEL).
+- Cria uma variável de controlo AI_PROVIDER com os valores "openai" (padrão) e "test".
+  - Se AI_PROVIDER="openai": o comportamento atual mantém-se, sem qualquer alteração.
+  - Se AI_PROVIDER="test": usa o fornecedor temporário.
+- Reutiliza o mesmo system prompt, a mesma personalidade e o mesmo fluxo de mensagens da Iris nos dois fornecedores, para que o comportamento seja igual.
+- Coloca o código novo num ficheiro/módulo separado (ex.: test_provider) e marca-o claramente com o comentário "TEMPORÁRIO - REMOVER APÓS TESTES".
+- Se a API temporária devolver erro 429 (limite), mostra uma mensagem amigável ao utilizador e não deixes a aplicação falhar.
+- Não coloques a chave no código do cliente (app/front-end). As chamadas devem passar pelo servidor/backend.
+
+O QUE NÃO DEVES FAZER
+- Não alterar a chave, o modelo, o endpoint ou a lógica da OpenAI.
+- Não alterar o system prompt, a personalidade ou o comportamento da Iris.
+- Não fazer refatorações, limpezas ou "melhorias" fora do que foi pedido.
+- Não expor nem imprimir chaves nos logs.
+
+ENTREGA
+No fim, indica:
+1. Que ficheiros criaste e que ficheiros alteraste (confirma que nenhum ficheiro/linha da OpenAI foi alterado).
+2. Que variáveis de ambiente tenho de preencher.
+3. Como alternar entre "openai" e "test".
+4. Como remover a integração temporária quando eu comprar os créditos (passos exatos).
