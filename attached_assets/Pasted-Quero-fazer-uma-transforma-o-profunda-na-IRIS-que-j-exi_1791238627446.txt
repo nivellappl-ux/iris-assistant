@@ -1,0 +1,1003 @@
+Quero fazer uma transformação profunda na IRIS que já existe neste projeto.
+
+ATENÇÃO:
+
+NÃO quero reconstruir a IRIS.
+
+NÃO quero substituir a personagem.
+
+NÃO quero alterar o Dynamic Island / Floating Island que já existe.
+
+NÃO quero mudar o visual atual da personagem.
+
+NÃO quero criar outra interface.
+
+O Dynamic Island e a personagem IRIS devem permanecer exatamente como estão visualmente e estruturalmente, salvo pequenas alterações técnicas estritamente necessárias para conectar as novas funcionalidades.
+
+O que quero mudar é praticamente TUDO relacionado à finalidade, inteligência, comportamento, arquitetura interna e forma como a IRIS funciona.
+
+A IRIS foi inicialmente criada com uma finalidade diferente da que quero agora.
+
+A partir deste momento, a IRIS deve ser concebida como:
+
+“A inteligência operacional do Duvion.”
+
+O Duvion é o sistema de gestão da empresa.
+
+A IRIS é a camada inteligente que permite ao empresário conversar com o próprio negócio, compreender o que está acontecendo e executar ações dentro do Duvion.
+
+Ela NÃO deve ser apenas um chatbot.
+
+Ela NÃO deve ser apenas uma personagem que responde perguntas.
+
+Ela NÃO deve ser apenas um assistente de computador.
+
+Ela deve compreender o contexto da empresa e utilizar os dados e funcionalidades do Duvion para conversar, analisar, explicar, sugerir e executar.
+
+⸻
+
+1. NOVA FINALIDADE DA IRIS
+
+⸻
+
+A IRIS deve funcionar como uma assistente empresarial inteligente.
+
+O utilizador deve poder falar naturalmente com ela através de texto ou voz.
+
+Exemplos:
+
+“Olá IRIS”
+
+“Como está a empresa hoje?”
+
+“Quanto vendemos este mês?”
+
+“Porque é que as vendas caíram?”
+
+“Quem são os nossos maiores clientes?”
+
+“Quanto temos para receber?”
+
+“Quais são as despesas que mais cresceram?”
+
+“Existe alguma coisa preocupante na empresa?”
+
+“Mostra-me os clientes que estão há mais de 30 dias sem comprar.”
+
+“Cria uma tarefa para ligar para o João amanhã.”
+
+“Regista esta despesa.”
+
+“Mostra-me o fluxo de caixa.”
+
+“Quais são as contas que vencem esta semana?”
+
+“Resume a situação financeira da empresa.”
+
+“Como posso melhorar as vendas este mês?”
+
+A IRIS deve compreender a intenção e utilizar as funcionalidades do Duvion para responder.
+
+⸻
+
+2. DUVION + IRIS
+
+⸻
+
+A arquitetura conceptual deve ser:
+
+DUVION
+
+dados + módulos + operações + histórico + empresa
+
+IRIS
+
+inteligência + conversa + análise + interpretação + execução
+
+A IRIS deve funcionar como uma camada sobre o Duvion.
+
+Ela deve conseguir consultar informações autorizadas dos módulos existentes e devolver a informação de forma humana e compreensível.
+
+Não quero que o utilizador tenha de navegar sempre pelo sistema para descobrir o que está acontecendo.
+
+Ele pode simplesmente perguntar à IRIS.
+
+⸻
+
+3. OPENAI API
+
+⸻
+
+A OpenAI API já foi adicionada ao projeto.
+
+A API KEY já foi configurada.
+
+PORÉM, neste momento a conta/API ainda não possui créditos suficientes para realizar chamadas reais.
+
+Portanto:
+
+NÃO fazer chamadas desnecessárias à OpenAI.
+
+NÃO criar loops que consumam tokens.
+
+NÃO fazer chamadas automáticas constantemente.
+
+NÃO utilizar a API simplesmente para testar a interface.
+
+NÃO assumir que existe crédito disponível.
+
+Criar uma arquitetura preparada para produção onde o provedor de IA seja separado da aplicação.
+
+Criar algo semelhante a:
+
+AI Provider
+↓
+OpenAI Provider
+↓
+IRIS Intelligence Layer
+↓
+Duvion Tools
+↓
+Duvion Database
+
+A OpenAI deve ser apenas o provider de inteligência.
+
+Não quero a lógica da IRIS diretamente espalhada pelo código.
+
+Criar uma camada própria para a IRIS.
+
+Exemplo conceptual:
+
+iris/
+core/
+intelligence/
+conversation/
+tools/
+context/
+voice/
+permissions/
+memory/
+providers/
+
+E dentro de providers:
+
+OpenAIProvider
+
+Criar também um modo:
+
+MockAIProvider / LocalAIProvider
+
+para que a aplicação possa funcionar e ser testada sem consumir créditos.
+
+Quando não houver crédito/API disponível:
+
+A IRIS deve continuar funcionando em modo de demonstração.
+
+Exemplo:
+
+“Estou em modo de demonstração neste momento. A conexão com o meu modelo de IA ainda não está disponível.”
+
+Mas a aplicação deve continuar permitindo testar:
+
+interface
+fluxo de conversa
+estados
+tool calling
+dados simulados
+ações simuladas
+voz
+memória
+contexto
+
+Quando a OpenAI estiver com crédito disponível, deve ser possível ativá-la sem reconstruir a aplicação.
+
+⸻
+
+4. CHAT API
+
+⸻
+
+A IRIS já possui integração com Chat API.
+
+Não remover essa integração.
+
+Reestruturar a utilização dela.
+
+A conversa deve deixar de ser uma conversa genérica.
+
+A IRIS deve ter contexto.
+
+Exemplo:
+
+Utilizador:
+“Como estão as vendas?”
+
+IRIS:
+“Este mês faturámos 4,8 milhões Kz…”
+
+Utilizador:
+“E comparando com o mês passado?”
+
+A IRIS deve entender que “mês passado” está relacionado com vendas.
+
+Não deve começar uma conversa completamente nova.
+
+A conversa precisa manter contexto.
+
+⸻
+
+5. CONTEXTO DA EMPRESA
+
+⸻
+
+Criar um contexto empresarial para a IRIS.
+
+Ela deve poder conhecer, quando autorizado:
+
+Nome da empresa
+Setor
+Moeda
+País
+Utilizadores
+Clientes
+Fornecedores
+Produtos
+Vendas
+Despesas
+Receitas
+Contas a receber
+Contas a pagar
+Fluxo de caixa
+Funcionários
+Tarefas
+Documentos
+Indicadores
+Objetivos
+Histórico
+
+Não significa enviar todos esses dados para a OpenAI em todas as mensagens.
+
+Criar um sistema inteligente de contexto.
+
+Só fornecer à IA os dados necessários para responder à pergunta.
+
+⸻
+
+6. IRIS DEVE PODER USAR FERRAMENTAS
+
+⸻
+
+Esta é uma das partes MAIS IMPORTANTES.
+
+Não quero uma IA que apenas escreve respostas.
+
+Criar um sistema de Tools / Functions para a IRIS.
+
+Exemplos:
+
+get_company_health()
+
+get_sales()
+
+get_sales_comparison()
+
+get_customers()
+
+get_customer()
+
+get_top_customers()
+
+get_inactive_customers()
+
+get_receivables()
+
+get_payables()
+
+get_cashflow()
+
+get_expenses()
+
+get_revenue()
+
+get_dashboard()
+
+get_tasks()
+
+create_task()
+
+create_reminder()
+
+create_customer()
+
+create_expense()
+
+create_note()
+
+search_documents()
+
+get_company_profile()
+
+A lista deve ser adaptada aos módulos reais existentes no Duvion.
+
+A IRIS deve conseguir decidir qual ferramenta precisa utilizar.
+
+Exemplo:
+
+Utilizador:
+“Como está a minha empresa?”
+
+IRIS:
+
+1. entende a pergunta
+2. identifica que precisa de dados empresariais
+3. chama get_company_health()
+4. recebe os dados
+5. interpreta
+6. responde ao utilizador
+
+⸻
+
+7. COMPANY HEALTH
+
+⸻
+
+Criar uma das funcionalidades mais importantes da IRIS:
+
+SAÚDE DA EMPRESA.
+
+A IRIS deve conseguir avaliar o estado geral da empresa.
+
+Não quero simplesmente mostrar números.
+
+Quero interpretação.
+
+Exemplo:
+
+“Neste momento a empresa está estável, mas encontrei três pontos que merecem atenção.
+
+As vendas caíram 12% em relação ao período anterior.
+
+Os valores a receber aumentaram.
+
+E as despesas operacionais cresceram acima das receitas.
+
+Se quiseres, posso mostrar-te onde está o principal problema.”
+
+A IRIS deve explicar os números.
+
+⸻
+
+8. DETECÇÃO DE PROBLEMAS
+
+⸻
+
+A IRIS deve procurar padrões relevantes nos dados.
+
+Exemplos:
+
+queda de vendas
+aumento anormal de despesas
+clientes inativos
+clientes em atraso
+faturas vencidas
+redução de margem
+crescimento de custos
+problemas de fluxo de caixa
+queda de produtividade
+tarefas atrasadas
+
+Não precisa executar análises pesadas constantemente.
+
+Criar uma arquitetura que permita análises sob demanda e futuramente análises automáticas.
+
+⸻
+
+9. SUGESTÕES
+
+⸻
+
+A IRIS não deve apenas dizer:
+
+“As vendas caíram.”
+
+Ela deve poder dizer:
+
+“As vendas caíram 14% neste período. A maior redução veio dos clientes do segmento X. Posso mostrar-te quais clientes deixaram de comprar.”
+
+E depois permitir:
+
+“Mostra.”
+
+Ou:
+
+“Contacta esses clientes.”
+
+Nesse momento a IRIS pode preparar a ação.
+
+⸻
+
+10. EXECUÇÃO DE AÇÕES
+
+⸻
+
+A IRIS deve poder executar ações dentro do Duvion.
+
+Exemplo:
+
+“Cria uma tarefa para ligar ao Manuel amanhã às 9.”
+
+IRIS:
+
+“Claro. Posso criar essa tarefa para amanhã às 09:00.”
+
+Depois da confirmação:
+
+create_task()
+
+Outro exemplo:
+
+“Regista uma despesa de 50.000 Kz referente ao transporte.”
+
+Como envolve alteração de dados, pedir confirmação antes de executar.
+
+⸻
+
+11. SISTEMA DE CONFIRMAÇÃO
+
+⸻
+
+Criar níveis de risco.
+
+BAIXO RISCO:
+
+Consultar informações
+Pesquisar clientes
+Mostrar vendas
+Mostrar indicadores
+Abrir módulos
+
+Pode executar diretamente.
+
+MÉDIO RISCO:
+
+Criar tarefas
+Criar lembretes
+Adicionar notas
+Criar registros
+
+Pedir confirmação quando necessário.
+
+ALTO RISCO:
+
+Eliminar dados
+Alterar informações financeiras importantes
+Emitir documentos
+Realizar operações financeiras
+Alterar permissões
+Executar ações irreversíveis
+
+Sempre exigir confirmação explícita e, quando necessário, autenticação.
+
+⸻
+
+12. VOZ
+
+⸻
+
+A voz deve ser uma das formas principais de interação.
+
+O utilizador deve poder:
+
+falar com a IRIS
+receber resposta por voz
+interromper
+continuar a conversa
+fazer perguntas consecutivas
+
+Fluxo:
+
+UTILIZADOR FALA
+↓
+Speech-to-Text
+↓
+IRIS entende
+↓
+consulta Duvion se necessário
+↓
+processa resposta
+↓
+Text-to-Speech
+↓
+IRIS responde
+
+A interface visual existente deve refletir:
+
+Listening
+Thinking
+Speaking
+Idle
+Success
+Error
+
+NÃO alterar o Dynamic Island atual.
+
+Apenas ligar os estados existentes à nova lógica.
+
+⸻
+
+13. CONVERSAÇÃO NATURAL
+
+⸻
+
+A IRIS deve permitir conversas mais soltas.
+
+Não quero que o utilizador precise falar como se estivesse a preencher um formulário.
+
+Exemplo ruim:
+
+“Consultar módulo vendas período setembro.”
+
+Exemplo desejado:
+
+“IRIS, diz-me como foram as vendas em setembro.”
+
+Depois:
+
+“E em agosto?”
+
+Depois:
+
+“E quais foram os produtos que mais venderam?”
+
+A IRIS deve manter o contexto da conversa.
+
+⸻
+
+14. PERSONALIDADE
+
+⸻
+
+A IRIS deve ser:
+
+inteligente
+calma
+clara
+profissional
+humana
+objetiva
+atenciosa
+curiosa quando necessário
+
+Não deve falar como um robô.
+
+Não deve responder sempre com textos enormes.
+
+Não deve utilizar linguagem corporativa artificial.
+
+Não deve começar todas as respostas com frases genéricas.
+
+Deve adaptar o tamanho da resposta à pergunta.
+
+⸻
+
+15. MEMÓRIA DA CONVERSA
+
+⸻
+
+Criar memória de sessão.
+
+Exemplo:
+
+Utilizador:
+“Mostra os clientes.”
+
+IRIS:
+lista os clientes.
+
+Utilizador:
+“Agora mostra só os que estão inativos.”
+
+IRIS deve entender o contexto.
+
+Também preparar arquitetura para memória futura, mas não criar armazenamento indiscriminado de todas as conversas.
+
+A memória deve ser controlada e estruturada.
+
+⸻
+
+16. IRIS NÃO DEVE SER UM CHATBOT ISOLADO
+
+⸻
+
+Este é um requisito fundamental.
+
+Não criar uma página de chatbot separada que fique desconectada do Duvion.
+
+A IRIS deve estar integrada ao sistema.
+
+Quando estiver dentro do módulo financeiro, ela deve conseguir compreender que o contexto é financeiro.
+
+Quando estiver dentro de clientes, deve compreender o contexto de clientes.
+
+Quando estiver no dashboard, deve compreender o contexto dos indicadores.
+
+Mas também deve funcionar globalmente.
+
+⸻
+
+17. NAVEGAÇÃO POR VOZ
+
+⸻
+
+Permitir comandos como:
+
+“Abre o financeiro.”
+
+“Mostra as vendas.”
+
+“Vai para clientes.”
+
+“Abre o dashboard.”
+
+“Mostra o fluxo de caixa.”
+
+“Quero ver as tarefas.”
+
+A IRIS deve conseguir controlar a navegação do Duvion através de comandos naturais.
+
+⸻
+
+18. ONBOARDING
+
+⸻
+
+A IRIS também deve ser a guia do Duvion.
+
+Um novo utilizador pode perguntar:
+
+“O que posso fazer aqui?”
+
+“Como registro uma venda?”
+
+“Como adiciono um cliente?”
+
+“Onde vejo o fluxo de caixa?”
+
+“Como funciona o Duvion?”
+
+A IRIS deve explicar e, quando possível, levar o utilizador diretamente ao local correto.
+
+⸻
+
+19. SEGURANÇA
+
+⸻
+
+Nunca permitir que a IA tenha acesso ilimitado ao sistema.
+
+Criar:
+
+permissions
+roles
+tool permissions
+audit logs
+confirmation layer
+
+Cada ação executada pela IRIS deve poder ser registrada.
+
+Exemplo:
+
+Utilizador
+→ IRIS
+→ Tool
+→ ação executada
+→ data/hora
+→ utilizador
+→ resultado
+
+⸻
+
+20. NÃO INVENTAR DADOS
+
+⸻
+
+REGRA ABSOLUTA:
+
+Se a IRIS não possuir os dados necessários, deve dizer que não possui os dados.
+
+Nunca inventar vendas.
+
+Nunca inventar clientes.
+
+Nunca inventar valores.
+
+Nunca inventar informações financeiras.
+
+Se não conseguir consultar uma informação:
+
+“Não consigo consultar esse dado neste momento.”
+
+E não criar uma resposta fictícia.
+
+⸻
+
+21. MODO SEM CRÉDITO OPENAI
+
+⸻
+
+Como a OpenAI API já está configurada, mas atualmente não existe crédito suficiente:
+
+Criar um modo de desenvolvimento.
+
+Configuração conceptual:
+
+AI_PROVIDER=openai
+
+ou
+
+AI_PROVIDER=mock
+
+Quando:
+
+AI_PROVIDER=mock
+
+a aplicação deve utilizar respostas simuladas e dados de teste.
+
+Quando:
+
+AI_PROVIDER=openai
+
+deve utilizar a API real.
+
+Nunca colocar a API Key diretamente no frontend.
+
+Nunca expor a API Key no browser.
+
+Utilizar variáveis de ambiente.
+
+Exemplo:
+
+OPENAI_API_KEY
+
+Criar também tratamento para:
+
+insufficient_quota
+rate_limit
+timeout
+invalid_api_key
+network_error
+
+A IRIS deve continuar funcionando visualmente mesmo quando a API estiver indisponível.
+
+⸻
+
+22. NÃO GASTAR CRÉDITOS AUTOMATICAMENTE
+
+⸻
+
+Não executar chamadas à OpenAI:
+
+ao abrir a aplicação
+a cada movimento da personagem
+a cada animação
+a cada mudança de estado
+automaticamente em background
+em loops
+sem interação do utilizador
+
+Uma chamada de IA deve acontecer quando realmente existir uma interação que necessite de inteligência.
+
+⸻
+
+23. ARQUITETURA
+
+⸻
+
+Organizar o sistema para separar:
+
+UI da IRIS
+Dynamic Island
+Character
+Conversation Engine
+AI Provider
+OpenAI Provider
+Mock Provider
+Voice Engine
+Context Manager
+Memory Manager
+Tool Registry
+Permission Manager
+Confirmation Manager
+Duvion Integration
+Audit Log
+
+Não misturar tudo num único componente.
+
+Criar interfaces claras entre essas partes.
+
+⸻
+
+24. NÃO ALTERAR A IRIS VISUAL
+
+⸻
+
+Reforço:
+
+NÃO redesenhar a personagem.
+
+NÃO substituir a personagem.
+
+NÃO substituir o Dynamic Island.
+
+NÃO criar outro avatar.
+
+NÃO criar sidebar.
+
+NÃO criar uma janela de chatbot.
+
+NÃO transformar a IRIS num dashboard.
+
+NÃO trocar a identidade visual existente.
+
+O trabalho é transformar a IRIS por dentro.
+
+A aparência atual deve continuar sendo a interface através da qual essa nova inteligência funciona.
+
+⸻
+
+25. IMPLEMENTAÇÃO
+
+⸻
+
+Antes de modificar o código:
+
+1. analisar toda a arquitetura atual da IRIS
+2. identificar onde está o Dynamic Island
+3. identificar onde está a personagem
+4. identificar o sistema atual de estados
+5. identificar a integração atual da Chat API
+6. identificar como a API Key está sendo utilizada
+7. identificar o sistema de voz existente
+8. identificar o frontend
+9. identificar o backend
+10. identificar os módulos atuais do Duvion
+11. identificar a base de dados
+12. identificar as funções que já podem ser utilizadas
+
+NÃO apagar funcionalidades existentes sem verificar primeiro.
+
+NÃO reconstruir aquilo que já funciona.
+
+Fazer a transformação incrementalmente.
+
+⸻
+
+26. PRIMEIRA FASE
+
+⸻
+
+Primeiro criar a fundação:
+
+AI Provider
+OpenAI Provider
+Mock Provider
+Conversation Engine
+Context Manager
+Tool Registry
+Permission System
+Confirmation System
+Audit Log
+
+Depois conectar esses componentes à IRIS existente.
+
+⸻
+
+27. SEGUNDA FASE
+
+⸻
+
+Integrar com os módulos reais do Duvion.
+
+Começar por:
+
+empresa
+dashboard
+financeiro
+vendas
+clientes
+tarefas
+
+Depois expandir para os restantes módulos.
+
+⸻
+
+28. TERCEIRA FASE
+
+⸻
+
+Integrar voz.
+
+Speech-to-Text
+IRIS
+Duvion Tools
+Text-to-Speech
+
+Sem alterar o Dynamic Island.
+
+⸻
+
+29. QUARTA FASE
+
+⸻
+
+Adicionar inteligência empresarial:
+
+Company Health
+análises
+comparações
+anomalias
+sugestões
+alertas
+insights
+
+⸻
+
+30. RESULTADO FINAL
+
+⸻
+
+O resultado que quero é muito diferente da IRIS original.
+
+Não quero:
+
+“um chatbot com uma personagem.”
+
+Quero:
+
+“uma inteligência empresarial que vive dentro do Duvion.”
+
+O utilizador deve sentir que pode simplesmente falar com a empresa.
+
+Exemplo:
+
+“IRIS, como estamos?”
+
+E ela deve conseguir compreender o estado do negócio.
+
+Depois:
+
+“O que mais me preocupa?”
+
+Ela deve identificar os principais problemas.
+
+Depois:
+
+“O que devo fazer?”
+
+Ela deve sugerir ações.
+
+Depois:
+
+“Faz isso.”
+
+Ela deve executar, quando tiver autorização.
+
+Esse é o objetivo central.
+
+A IRIS deve evoluir de uma simples assistente virtual para a interface inteligente do Duvion.
+
+IMPORTANTE:
+
+Não começar redesenhando a interface.
+
+Não começar criando outra personagem.
+
+Não começar criando outro Dynamic Island.
+
+Começar analisando o código existente e transformar a arquitetura interna e a finalidade da IRIS.
+
+Preservar a IRIS visualmente.
+
+Transformar a inteligência, integração, contexto, voz, ferramentas e capacidade operacional.
+
+Antes de implementar qualquer parte complexa, verificar como o projeto atual está estruturado e reutilizar o que já existe sempre que possível.
