@@ -2,6 +2,7 @@ import { IrisChatBody, IrisChatResponse, IrisSpeechBody, IrisSpeechResponse } fr
 import { Router, type IRouter, type RequestHandler } from "express";
 import { randomUUID } from "node:crypto";
 import { AccessToken, RoomConfiguration } from "livekit-server-sdk";
+import { getAuth } from "@clerk/express";
 import {
   generateIrisReply,
   getIrisAIProviderMode,
@@ -106,6 +107,16 @@ const limitAIRequests: RequestHandler = (req, res, next) => {
   next();
 };
 
+const requireSignedInUser: RequestHandler = (req, res, next) => {
+  const userId = getAuth(req).userId;
+  if (!userId) {
+    res.status(401).json({ error: "Inicia sessão para usar a conversa por voz." });
+    return;
+  }
+  res.locals.clerkUserId = userId;
+  next();
+};
+
 router.post("/iris/chat", requireTrustedOrigin, limitAIRequests, async (req, res): Promise<void> => {
   const parsed = IrisChatBody.safeParse(req.body);
   if (!parsed.success) {
@@ -181,12 +192,7 @@ router.post("/iris/speech", requireTrustedOrigin, limitAIRequests, async (req, r
   }
 });
 
-router.post("/iris/livekit/token", requireTrustedOrigin, limitAIRequests, async (req, res): Promise<void> => {
-  if (process.env.NODE_ENV !== "development") {
-    res.status(403).json({ error: "A conversa por voz está disponível apenas no ambiente de desenvolvimento." });
-    return;
-  }
-
+router.post("/iris/livekit/token", requireTrustedOrigin, requireSignedInUser, limitAIRequests, async (req, res): Promise<void> => {
   const serverUrl = process.env.LIVEKIT_URL?.trim().replace(/\/+$/, "");
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
@@ -196,9 +202,10 @@ router.post("/iris/livekit/token", requireTrustedOrigin, limitAIRequests, async 
   }
 
   try {
+    const userId = res.locals.clerkUserId as string;
     const roomName = `iris-dev-${randomUUID()}`;
     const participantToken = new AccessToken(apiKey, apiSecret, {
-      identity: `iris-user-${randomUUID()}`,
+      identity: `iris-user-${userId}`,
       name: "Utilizador IRIS",
       ttl: "5m",
     });

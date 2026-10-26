@@ -12,6 +12,8 @@
     "test": "pnpm exec esbuild src/lib/irisAi.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/irisAi.test.mjs && node --test src/lib/*.test.mjs"
   },
   "dependencies": {
+    "@clerk/express": "^2.1.83",
+    "@clerk/shared": "^4.41.1",
     "@google/genai": "^1.52.0",
     "@livekit/agents": "^1.9.3",
     "@livekit/rtc-node": "^1.1.0",
@@ -21,6 +23,7 @@
     "cors": "^2.8.6",
     "drizzle-orm": "catalog:",
     "express": "^5.2.1",
+    "http-proxy-middleware": "^4.2.1",
     "livekit-server-sdk": "^2.19.1",
     "openai": "^7.27.0",
     "pino": "^9.14.0",

@@ -3,10 +3,12 @@ import {
   Activity, Archive, ArrowDownRight, ArrowUpRight, AudioWaveform, Bell, CalendarCheck, CalendarClock,
   Check, CheckCheck, ChevronDown, CircleHelp, Command, FileText, Focus, FolderKanban,
   Inbox as InboxIcon, Lightbulb, ListTodo, Menu, MessageCircle, Mic, MicOff, MoreHorizontal,
-  Plus, Radio, Search, Send, Settings, Sparkles, Trash2, Volume2, X,
+  LogIn, LogOut, Plus, Radio, Search, Send, Settings, Sparkles, Trash2, Volume2, X,
   type LucideIcon,
 } from 'lucide-react';
 import { isTauri } from '@tauri-apps/api/core';
+import { useAuth, useClerk } from '@clerk/react';
+import { useLocation } from 'wouter';
 import { irisChat } from '@workspace/api-client-react';
 import { BotEngine } from './mochi/engine';
 import type { BotEmoteName, BotStateName } from './core/layout';
@@ -260,6 +262,9 @@ function CaptureDialog({ text, category, file, saving, setText, setCategory, set
 }
 
 function App() {
+  const { isLoaded: authLoaded, isSignedIn } = useAuth();
+  const { signOut } = useClerk();
+  const [, setLocation] = useLocation();
   const desktopMode = isTauri();
   const [tasks, setTasks] = useState<Task[]>(() => irisCore.readState('tasks', []));
   const [messages, setMessages] = useState<ChatMessage[]>(() => irisCore.readState('chat', INITIAL_CHAT));
@@ -817,6 +822,11 @@ function App() {
   };
 
   const toggleVoice = () => {
+    if (!authLoaded) return;
+    if (!isSignedIn) {
+      setLocation('/sign-in');
+      return;
+    }
     const liveKitVoice = liveKitVoiceRef.current;
     if (!liveKitVoice) return;
     if (liveKitVoice.isActive) {
@@ -1176,6 +1186,16 @@ function App() {
           <div className="iris-sidebar-bottom">
             <div className="iris-local-state"><span className="iris-local-dot" /><span>Guardado neste dispositivo</span></div>
             <GoogleConnections />
+            <button
+              className="iris-nav-item iris-account-action"
+              type="button"
+              data-testid="button-iris-account"
+              aria-label={isSignedIn ? 'Terminar sessão da IRIS' : 'Entrar ou criar conta para usar a voz'}
+              onClick={() => isSignedIn ? void signOut({ redirectUrl: import.meta.env.BASE_URL || '/' }) : setLocation('/sign-in')}
+            >
+              {isSignedIn ? <LogOut /> : <LogIn />}
+              <span>{authLoaded ? (isSignedIn ? 'Terminar sessão' : 'Entrar / Criar conta') : 'A carregar conta…'}</span>
+            </button>
             <button className={`iris-nav-item${section === 'home' ? ' active' : ''}`} type="button" onClick={() => navSection('home')}><CalendarCheck /><span>Hoje</span></button>
             <button className={`iris-nav-item${section === 'settings' ? ' active' : ''}`} type="button" onClick={() => navSection('settings')}><Settings /><span>Definições</span></button>
             <button className={`iris-nav-item${section === 'help' ? ' active' : ''}`} type="button" onClick={() => navSection('help')}><CircleHelp /><span>Ajuda</span></button>
