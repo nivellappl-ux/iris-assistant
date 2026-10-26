@@ -1,6 +1,37 @@
 import { irisSpeech } from "@workspace/api-client-react";
 import { VoiceProviderError, type TextToSpeechCallbacks, type TextToSpeechProvider } from "./contracts";
 
+const FEMININE_PORTUGUESE_VOICE_NAMES = /\b(joana|bruna|sofia|ines|francisca|maria|ana|helena|beatriz|clara|sara|raquel|leonor|female|feminine|feminina)\b/i;
+
+function normalizedVoiceName(name: string): string {
+  return name.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+}
+
+function preferredPortugueseVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefined {
+  const ptPortugal = voices.filter((voice) => /^pt[-_]pt$/i.test(voice.lang));
+  const feminine = ptPortugal.find((voice) => FEMININE_PORTUGUESE_VOICE_NAMES.test(normalizedVoiceName(voice.name)));
+  return feminine ?? ptPortugal[0] ?? voices.find((voice) => /^pt(?:[-_]|$)/i.test(voice.lang));
+}
+
+async function getBrowserVoices(synthesis: SpeechSynthesis): Promise<SpeechSynthesisVoice[]> {
+  const available = synthesis.getVoices();
+  if (available.length) return available;
+
+  await new Promise<void>((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      synthesis.removeEventListener("voiceschanged", finish);
+      resolve();
+    };
+    const timeout = window.setTimeout(finish, 800);
+    synthesis.addEventListener("voiceschanged", finish, { once: true });
+  });
+  return synthesis.getVoices();
+}
+
 function serverErrorMessage(error: unknown): string | null {
   if (typeof error !== "object" || error === null || !("data" in error)) return null;
   const data = error.data;
@@ -96,6 +127,8 @@ export class IrisTextToSpeechProvider implements TextToSpeechProvider {
     utterance.lang = "pt-PT";
     utterance.rate = 1;
     utterance.pitch = 1;
+    const voice = preferredPortugueseVoice(await getBrowserVoices(synthesis));
+    if (voice) utterance.voice = voice;
     this.speechSynthesis = synthesis;
     this.utterance = utterance;
 

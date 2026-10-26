@@ -17,8 +17,9 @@ export default defineAgent({
       stt: new inference.STT({ model: "deepgram/nova-3", language: "pt-PT" }),
       llm: new inference.LLM({ model: "google/gemma-4-31b-it" }),
       tts: new inference.TTS({
-        model: "fishaudio/s2.1-pro",
-        voice: "fa4c9eb3dccc4806b382b40d61c6b10a",
+        model: "gradium/default",
+        voice: "7yIuXOsv9bkpmRVv",
+        language: "pt",
       }),
       turnHandling: {
         turnDetection: new inference.TurnDetector(),

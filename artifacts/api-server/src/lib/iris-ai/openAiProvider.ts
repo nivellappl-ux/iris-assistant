@@ -65,7 +65,7 @@ export class OpenAIProvider implements IrisAIProvider {
       voice: "nova",
       input: text,
       response_format: "mp3",
-      instructions: "Use a warm, calm feminine voice. Speak Portuguese naturally and read only the supplied text.",
+      instructions: "Use a warm, calm feminine voice with a natural European Portuguese (Portugal) accent. Read only the supplied text.",
     });
 
     return {

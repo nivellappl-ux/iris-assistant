@@ -21,11 +21,11 @@ Wake-word standby should auto-start on app open by default when microphone permi
 
 ## LiveKit voice access
 
-The user requests LiveKit voice on the published IRIS site. Keep written chat public and require a real signed-in session only for voice. LiveKit credentials stay server-side, and room tokens stay short-lived and room-scoped. Keep Duvion disconnected and OpenAI configuration untouched.
+The user requests LiveKit voice on the published IRIS site. Keep written chat public and require a real signed-in session only for voice. LiveKit credentials stay server-side, and room tokens stay short-lived and room-scoped. Voice should be feminine and in European Portuguese (Portugal). Keep Duvion disconnected and OpenAI configuration untouched.
 
 **Why:** The user changed the earlier development-only voice decision by requesting authentication so published voice can be used safely.
 
-**How to apply:** Protect LiveKit token issuance with Clerk identity; do not gate text chat. Verify production voice-worker availability separately from API token issuance.
+**How to apply:** Protect LiveKit token issuance with Clerk identity; do not gate text chat. Use a feminine pt-PT voice for audio and verify production voice-worker availability separately from API token issuance.
 
 **Why:** An already-running API process continued signing tokens with its previous credentials after environment values changed, while fresh shell checks used the new values; LiveKit rejected those stale signatures.
 
