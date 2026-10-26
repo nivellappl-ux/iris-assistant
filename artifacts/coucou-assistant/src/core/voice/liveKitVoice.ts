@@ -10,9 +10,21 @@ export class LiveKitVoiceSession {
   private room: Room | null = null;
   private audioElements: HTMLAudioElement[] = [];
   private active = false;
+  private microphoneMuted = false;
 
   get isActive() {
     return this.active;
+  }
+
+  get isMicrophoneMuted() {
+    return this.microphoneMuted;
+  }
+
+  async setMicrophoneMuted(muted: boolean): Promise<void> {
+    const room = this.room;
+    if (!room || !this.active) return;
+    await room.localParticipant.setMicrophoneEnabled(!muted);
+    this.microphoneMuted = muted;
   }
 
   async start(onStatus: (status: "listening" | "speaking" | "idle") => void): Promise<void> {
@@ -62,6 +74,7 @@ export class LiveKitVoiceSession {
       await room.connect(payload.serverUrl, payload.participantToken);
       await room.startAudio();
       await room.localParticipant.setMicrophoneEnabled(true);
+      this.microphoneMuted = false;
       this.active = true;
       onStatus("listening");
     } catch (error) {
@@ -76,6 +89,7 @@ export class LiveKitVoiceSession {
     const room = this.room;
     this.room = null;
     this.active = false;
+    this.microphoneMuted = false;
     if (room) {
       await room.localParticipant.setMicrophoneEnabled(false).catch(() => undefined);
       await room.disconnect();

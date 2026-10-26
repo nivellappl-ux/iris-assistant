@@ -35,6 +35,7 @@ type SpeechRecognitionWindow = Window & {
 };
 
 const RESTART_DELAY_MS = 250;
+export const IRIS_SPEECH_LANGUAGES = ['pt-AO', 'pt-PT', 'en-US'] as const;
 
 export class BrowserSpeechRecognitionProvider implements SpeechRecognitionProvider {
   private recognition: SpeechRecognitionLike | null = null;
@@ -42,7 +43,7 @@ export class BrowserSpeechRecognitionProvider implements SpeechRecognitionProvid
   private active = false;
   private paused = false;
   private restartTimer: number | null = null;
-  private languages: readonly string[] = ['pt-PT'];
+  private languages: readonly string[] = IRIS_SPEECH_LANGUAGES;
   private languageIndex = 0;
 
   get available(): boolean {
@@ -58,8 +59,8 @@ export class BrowserSpeechRecognitionProvider implements SpeechRecognitionProvid
     this.callbacks = callbacks;
     this.active = true;
     this.paused = false;
-    this.languages = options.languages?.filter((language) => language.trim()) ?? ['pt-PT'];
-    if (!this.languages.length) this.languages = ['pt-PT'];
+    this.languages = options.languages?.filter((language) => language.trim()) ?? IRIS_SPEECH_LANGUAGES;
+    if (!this.languages.length) this.languages = IRIS_SPEECH_LANGUAGES;
     this.languageIndex = 0;
     if (!this.startRecognition(constructor)) {
       this.active = false;
@@ -122,7 +123,7 @@ export class BrowserSpeechRecognitionProvider implements SpeechRecognitionProvid
     }
 
     this.recognition = recognition;
-    recognition.lang = this.languages[this.languageIndex] ?? 'pt-PT';
+    recognition.lang = this.languages[this.languageIndex] ?? IRIS_SPEECH_LANGUAGES[0];
     recognition.continuous = true;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;

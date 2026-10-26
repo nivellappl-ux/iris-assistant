@@ -48,3 +48,6 @@ packages = ["pkg-config", "webkitgtk_4_1", "gtk3", "openssl", "librsvg", "dbus",
 [userenv.development]
 AI_PROVIDER = "gemini"
 LIVEKIT_URL = "wss://iris097-g89wn4vd.livekit.cloud/"
+
+[userenv.shared]
+VITE_GOOGLE_CLIENT_ID = "352860214095-eao50jtpeenh8hkm0i2dhi7ki1mc5g8k.apps.googleusercontent.com"

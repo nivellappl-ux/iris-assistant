@@ -1,5 +1,5 @@
 import { VoiceProviderError, type SpeechRecognitionProvider, type WakeWordProvider } from './contracts';
-import { BrowserSpeechRecognitionProvider } from './browserSpeech';
+import { BrowserSpeechRecognitionProvider, IRIS_SPEECH_LANGUAGES } from './browserSpeech';
 
 const WAKE_PHRASES = [
   /\b(?:acorda|acordar)\s+iris\b/,
@@ -58,7 +58,7 @@ export class BrowserWakeWordProvider implements WakeWordProvider {
           this.stop();
           onError?.(message);
         },
-      }, { languages: ['pt-PT', 'en-US'] });
+      }, { languages: IRIS_SPEECH_LANGUAGES });
     } catch (error) {
       this.active = false;
       this.onWake = null;

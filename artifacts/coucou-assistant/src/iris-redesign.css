@@ -846,3 +846,249 @@ a:focus-visible {
   *::before,
   *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* IRIS chat-first specification tokens */
+:root {
+  --iris-bg: #0c0b10;
+  --iris-sidebar: #100f14;
+  --iris-surface: #100f14;
+  --iris-surface-raised: #14131a;
+  --iris-line: #201e26;
+  --iris-line-soft: #201e26;
+  --iris-text: #f2f2f4;
+  --iris-muted: #a3a3ad;
+  --iris-subtle: #8a8a93;
+  --iris-accent: #8b7cff;
+  --iris-accent-strong: #a396ff;
+  --iris-accent-ink: #110f1b;
+  --iris-danger: #e5484d;
+  --iris-success: #9ac4aa;
+  --iris-font: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --iris-mono: 'DM Mono', ui-monospace, monospace;
+  --bg: #0c0b10;
+  --surface: #100f14;
+  --surface-2: #14131a;
+  --surface-3: #1a1822;
+  --line: #201e26;
+  --line-2: #2e2c38;
+  --island-from: #1e1b2e;
+  --island-to: #11131a;
+  --island-border: #3b3849;
+  --island-voice-bg: #08080c;
+  --text: #f2f2f4;
+  --text-2: #a3a3ad;
+  --text-3: #8a8a93;
+  --accent: #8b7cff;
+  --danger: #e5484d;
+}
+
+html, body, #root, .iris-root { background: #0c0b10; }
+.iris-root { min-height: 100dvh; overflow-x: clip; padding-top: env(safe-area-inset-top); }
+.iris-root[data-reduced-motion="true"] *, .iris-root[data-reduced-motion="true"] *::before, .iris-root[data-reduced-motion="true"] *::after {
+  animation: none !important; transition-duration: 150ms !important;
+}
+.iris-workspace { grid-template-columns: 264px minmax(0, 1fr); padding-top: 75px; }
+.iris-sidebar { width: 264px; padding: 25px 17px calc(18px + env(safe-area-inset-bottom)); background: #100f14; border-color: #201e26; }
+.iris-brand { margin-bottom: 22px; }
+.iris-nav-group { display: none; }
+.iris-new-conversation {
+  display: flex; width: 100%; min-height: 46px; align-items: center; gap: 10px; margin: 0 0 25px; padding: 0 13px;
+  border: 1px solid #2e2c38; border-radius: 24px; background: #14131a; color: #f2f2f4; font-size: 12px; font-weight: 700;
+}
+.iris-new-conversation:hover, .iris-history-sidebar-item:hover { background: #14131a; }
+.iris-new-conversation svg { width: 17px; height: 17px; color: var(--iris-accent); }
+.iris-new-conversation kbd { margin-left: auto; color: var(--iris-subtle); font: 9px var(--iris-mono); }
+.iris-history-sidebar { min-height: 0; flex: 1; overflow-y: auto; }
+.iris-history-sidebar-item { display: flex; width: 100%; min-height: 44px; align-items: center; gap: 10px; padding: 0 11px; border: 0; border-radius: 11px; background: #1a1822; color: #f2f2f4; text-align: left; font-size: 11px; }
+.iris-history-sidebar-item svg { width: 15px; height: 15px; color: var(--iris-accent); }
+.iris-history-empty { padding: 10px; color: var(--iris-subtle); font-size: 10px; }
+.iris-history-date { padding: 7px 10px; color: #8a8a93; font: 9px var(--iris-mono); letter-spacing: 1px; }
+.iris-island:has(.iris-island-voice-panel) { width: min(720px, calc(100vw - 292px)); border-radius: 36px; background: #08080c; }
+.iris-island:has(.iris-island-voice-panel) .iris-island-mode::before { content: "IRIS ·"; color: #f2f2f4; }
+.iris-root:has(.iris-island-voice-panel) .iris-sidebar { opacity: .42; transition: opacity 200ms ease; }
+.iris-sidebar-bottom { gap: 4px; }
+.iris-sidebar-bottom .iris-local-state { display: none; }
+.iris-sidebar-bottom .iris-nav-item { min-height: 44px; }
+.iris-main { grid-column: 2; min-width: 0; padding: 0 34px calc(120px + env(safe-area-inset-bottom)); }
+.iris-topbar { height: 0; border: 0; visibility: hidden; }
+.iris-page-heading { display: none; }
+.iris-content { width: 100%; max-width: 900px; }
+.iris-island {
+  top: calc(10px + env(safe-area-inset-top));
+  left: calc(264px + (100vw - 264px) / 2);
+  width: min(520px, calc(100vw - 292px));
+  border: 1px solid var(--island-border);
+  border-radius: 34px;
+  background: linear-gradient(135deg, var(--island-from), var(--island-to));
+  box-shadow: 0 12px 40px #0006;
+  transition: width 320ms cubic-bezier(.2,.8,.2,1), border-radius 320ms cubic-bezier(.2,.8,.2,1), background 150ms ease, border-color 150ms ease;
+}
+.iris-island-trigger { height: 68px; min-height: 68px; }
+.iris-island.is-expanded { border-radius: 28px; }
+.iris-island-menu-trigger {
+  position: absolute; top: 12px; right: 43px; z-index: 2; display: grid; width: 44px; height: 44px; place-items: center;
+  border: 0; border-radius: 22px; background: transparent; color: #a3a3ad;
+}
+.iris-island-menu-trigger:hover { background: #ffffff0c; color: #f2f2f4; }
+.iris-island-menu-trigger svg { width: 19px; height: 19px; }
+.iris-island-tools { display: none !important; }
+.iris-island-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 9px 0 3px; }
+.iris-island-menu button { display: flex; min-height: 44px; align-items: center; gap: 9px; padding: 0 11px; border: 1px solid #ffffff0a; border-radius: 12px; background: #ffffff07; color: #e8e5ed; text-align: left; font-size: 10px; }
+.iris-island-menu button:hover, .iris-history-item:hover { background: #ffffff10; }
+.iris-island-menu button svg { width: 15px; height: 15px; color: var(--iris-accent); }
+.iris-history-item { display: grid; width: 100%; gap: 4px; padding: 12px; border: 1px solid #ffffff16; border-radius: 13px; background: #ffffff07; color: #f2f2f4; text-align: left; font-size: 11px; }
+.iris-history-item small { color: #a3a3ad; font-size: 9px; }
+.iris-island-voice-panel { display: flex; align-items: center; justify-content: space-between; gap: 7px; margin: 4px 0 10px; padding: 7px; border: 1px solid #3b3849; border-radius: 18px; background: #08080c; }
+.iris-island:has(.iris-island-voice-panel) .iris-island-panel-head .iris-island-tools { display: none; }
+.iris-island-voice-panel button { display: grid; min-width: 44px; min-height: 44px; place-items: center; border: 1px solid #2e2c38; border-radius: 22px; background: #14131a; color: #a3a3ad; font-size: 10px; }
+.iris-island-voice-panel button svg { width: 16px; height: 16px; }
+.iris-island-voice-panel .iris-voice-end { border-color: #e5484d; background: #e5484d; color: white; }
+.iris-voice-level { display: flex; flex: 1; align-items: center; justify-content: center; gap: 3px; height: 30px; }
+.iris-voice-level i { width: 3px; height: 5px; border-radius: 5px; background: #8b7cff; }
+.iris-voice-level i:nth-child(2n) { height: 9px; }.iris-voice-level i:nth-child(3n) { height: 13px; }
+@keyframes iris-voice-level { to { height: 21px; opacity: .55; } }
+.iris-live-caption { margin: 10px 2px 2px; color: #a3a3ad; font-size: 13px; line-height: 1.55; }
+.iris-root[data-state="listening"] .iris-island-tools, .iris-island[data-state="listening"] .iris-island-tools,
+.iris-island[data-state="thinking"] .iris-island-tools, .iris-island[data-state="speaking"] .iris-island-tools { display: none; }
+.iris-chat-layout { display: block; width: min(720px, 100%); margin: 0 auto; }
+.iris-chat-panel { min-height: calc(100dvh - 120px); padding-top: 82px; border-top: 0; }
+.iris-messages { max-height: none; overflow: visible; gap: 24px; padding: 22px 0 18px; }
+.iris-message { display: flex; max-width: 100%; width: 100%; }
+.iris-message.user { justify-content: flex-end; }
+.iris-message-bubble { max-width: min(520px, 78vw); padding: 14px 17px; border: 1px solid #1a1822; border-radius: 20px 20px 6px 20px; background: #1a1822; color: #f2f2f4; font-size: 14px; line-height: 1.6; }
+.iris-message-bubble time { display: block; margin-top: 7px; color: #8a8a93; font: 9px var(--iris-mono); }
+.iris-assistant-response { display: flex; align-items: flex-start; gap: 12px; width: 100%; }
+.iris-assistant-response > .mochi-figure { width: 30px !important; height: 30px !important; }
+.iris-assistant-copy { flex: 1; min-width: 0; color: #f2f2f4; }
+.iris-assistant-copy p { margin: 3px 0 10px; white-space: pre-wrap; font-size: 16px; line-height: 1.65; }
+.iris-message-actions { display: flex; gap: 4px; }
+.iris-message-actions button { display: grid; width: 44px; height: 44px; place-items: center; border: 0; border-radius: 22px; background: transparent; color: #8a8a93; }
+.iris-message-actions button:hover { background: #14131a; color: #f2f2f4; }
+.iris-message-actions svg { width: 16px; height: 16px; }
+.iris-thinking { display: flex; align-items: center; gap: 12px; color: #a3a3ad; font-size: 14px; }
+.iris-thinking-dots { display: inline-block; padding-left: 4px; animation: iris-thinking-pulse 900ms ease-in-out infinite; }
+@keyframes iris-thinking-pulse { 50% { opacity: .25; } }
+.iris-chat-empty-hero { display: flex; flex-direction: column; align-items: center; justify-content: end; min-height: clamp(190px, 30vh, 270px); padding-top: 75px; }
+.iris-chat-empty-hero .mochi-figure { width: 96px !important; height: 78px !important; }
+.iris-chat-empty-hero .mochi-figure-canvas { width: 96px !important; height: 78px !important; }
+.iris-chat-empty-hero h2 { margin: 10px 0 0; color: #f2f2f4; font-size: 28px; font-weight: 600; letter-spacing: -.04em; }
+.iris-suggestions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; width: min(560px, 100%); margin: 0 auto 15px; }
+.iris-suggestions button { min-height: 60px; padding: 12px 15px; border: 1px solid #2e2c38; border-radius: 16px; background: #100f14; color: #f2f2f4; text-align: left; font-size: 12px; transition: background 150ms ease, border-color 150ms ease; }
+.iris-suggestions button:hover { border-color: #514a70; background: #14131a; }
+.iris-chat-compose { position: fixed; right: auto; bottom: calc(18px + env(safe-area-inset-bottom)); left: calc(264px + (100vw - 264px) / 2); z-index: 30; width: min(720px, calc(100vw - 320px)); min-height: 60px; gap: 7px; padding: 6px; border: 1px solid #2e2c38; border-radius: 30px; background: #14131a; box-shadow: 0 12px 32px #0005; transform: translateX(-50%); }
+.iris-chat-compose textarea { flex: 1; min-width: 0; min-height: 42px; max-height: 144px; resize: none; padding: 12px 5px; border: 0; outline: 0; background: transparent; color: #f2f2f4; font-size: 13px; line-height: 1.35; }
+.iris-chat-compose textarea::placeholder { color: #8a8a93; }
+.iris-chat-compose .iris-chat-attach, .iris-chat-compose .iris-chat-mic, .iris-chat-compose .iris-send-button, .iris-chat-compose .iris-chat-voice { display: grid; width: 44px; height: 44px; flex: none; place-items: center; border: 0; border-radius: 22px; }
+.iris-chat-attach, .iris-chat-mic { background: #1a1822; color: #a3a3ad; }
+.iris-chat-attach svg, .iris-chat-mic svg { width: 18px; height: 18px; }
+.iris-chat-mic.active { color: #8b7cff; }
+.iris-chat-compose .iris-send-button { background: #8b7cff; color: #110f1b; }
+.iris-chat-compose .iris-send-button:disabled { background: #2e2c38; color: #8a8a93; cursor: not-allowed; }
+.iris-chat-compose .iris-chat-voice { background: #1a1822; color: #f2f2f4; }
+.iris-chat-compose .iris-chat-voice svg { width: 20px; height: 20px; }
+.iris-chat-compose .iris-chat-voice.active { background: #8b7cff; color: #110f1b; }
+.iris-google-launcher { position: relative; z-index: 55; display: flex; width: 100%; align-items: center; gap: 8px; margin: 0 0 5px; }
+.iris-google-avatar { display: grid; width: 36px; height: 36px; flex: none; place-items: center; border: 1px solid #292831; border-radius: 50%; background: #17161b; color: #b4b2bc; }
+.iris-google-avatar svg { width: 17px; height: 17px; }
+.iris-google-launcher-main { position: relative; min-width: 0; flex: 1; }
+.iris-google-launcher-button { display: flex; width: 100%; min-height: 38px; align-items: center; justify-content: space-between; gap: 8px; padding: 0 10px 0 12px; border: 1px solid #302d36; border-radius: 22px; background: #1b1920; color: #f2f2f4; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.iris-google-launcher-button:hover { border-color: #51495e; background: #211e28; }
+.iris-google-launcher-icons { display: inline-flex; align-items: center; gap: 5px; }
+.iris-google-launcher-icons > span { display: grid; width: 21px; height: 21px; place-items: center; overflow: hidden; border-radius: 6px; background: #f4f4f4; }
+.iris-google-launcher-icons img { width: 20px; height: 20px; object-fit: contain; }
+.iris-google-popover { position: absolute; bottom: calc(100% + 8px); left: 0; display: grid; width: min(320px, calc(100vw - 28px)); gap: 8px; padding: 12px; border: 1px solid #302d36; border-radius: 18px; background: #111016; box-shadow: 0 16px 42px #0009; }
+.iris-google-popover-head { display: flex; align-items: center; justify-content: space-between; padding: 0 2px 4px; font-size: 13px; }
+.iris-google-popover-head button { display: grid; width: 28px; height: 28px; place-items: center; border: 0; border-radius: 50%; background: transparent; color: #a3a3ad; }
+.iris-google-popover-head button:hover { background: #ffffff0c; color: #f2f2f4; }
+.iris-google-popover-head svg { width: 15px; height: 15px; }
+.iris-google-app { display: flex; min-height: 64px; align-items: center; gap: 11px; padding: 9px 10px; border: 1px solid #292630; border-radius: 14px; background: #0d0c11; }
+.iris-google-app-icon { display: grid; width: 36px; height: 36px; flex: none; place-items: center; border-radius: 11px; background: #1b1922; color: #c3b7e4; }
+.iris-google-app-icon img { width: 28px; height: 28px; object-fit: contain; }
+.iris-google-app-copy { display: grid; min-width: 0; flex: 1; gap: 4px; }
+.iris-google-app-copy strong { font-size: 12px; font-weight: 600; }
+.iris-google-app-copy small { overflow: hidden; color: #a3a3ad; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.iris-google-connect { display: inline-flex; min-height: 36px; align-items: center; gap: 6px; padding: 0 11px; font-size: 10px; }
+.iris-google-connect svg { width: 13px; height: 13px; }
+.iris-google-connected { display: inline-flex; min-height: 36px; align-items: center; gap: 5px; padding: 0 8px; border: 1px solid #32303b; border-radius: 11px; background: #17161c; color: #c7e9cf; font-size: 10px; }
+.iris-google-connected svg { width: 13px; height: 13px; }
+.iris-google-note, .iris-google-error { margin: 3px 0 0; color: #a3a3ad; font-size: 10px; line-height: 1.5; }
+.iris-google-error { color: #f1a5a5; }
+@media (max-width: 820px) and (min-width: 768px) {
+  .iris-google-launcher { justify-content: center; }
+  .iris-google-avatar { display: none; }
+  .iris-google-launcher-main { flex: none; }
+  .iris-google-launcher-button { width: 46px; min-height: 42px; justify-content: center; padding: 0; border-radius: 14px; }
+  .iris-google-launcher-button > span:first-child { display: none; }
+  .iris-google-popover { bottom: 0; left: 52px; width: min(320px, calc(100vw - 84px)); }
+}
+.iris-chat-shortcut-hint { position: fixed; right: auto; bottom: 1px; left: calc(264px + (100vw - 264px) / 2); width: min(720px, calc(100vw - 320px)); color: #8a8a93; text-align: center; font: 9px var(--iris-mono); transform: translateX(-50%); }
+.iris-root[data-section="chat"] .iris-page-heading, .iris-root[data-section="home"] .iris-page-heading { display: none; }
+.iris-root[data-section="chat"] .iris-chat-panel, .iris-root[data-section="home"] .iris-chat-panel { min-height: 0; }
+.iris-settings-redesign { max-width: 720px; margin: 12px auto 40px; }
+.iris-settings-title { margin: 0 0 25px; color: #f2f2f4; font-size: 26px; font-weight: 600; letter-spacing: -.04em; }
+.iris-settings-redesign .iris-settings-group { padding: 17px; border: 1px solid #201e26; border-radius: 20px; background: #100f14; }
+.iris-settings-redesign .iris-section-kicker { display: block; margin-bottom: 8px; color: #8a8a93; font: 500 11.5px/1.5 var(--iris-mono); letter-spacing: 1.6px; }
+.iris-settings-redesign .iris-setting-row { min-height: 52px; }
+.iris-settings-redesign .iris-setting-row strong { color: #f2f2f4; font-size: 12px; }
+.iris-settings-redesign .iris-setting-row p { color: #a3a3ad; font-size: 10px; }
+.iris-settings-redesign .iris-switch { width: 46px; height: 28px; border-color: #2e2c38; background: #2e2c38; }
+.iris-settings-redesign .iris-switch span { top: 5px; left: 5px; width: 16px; height: 16px; }
+.iris-settings-redesign .iris-switch.on { border-color: #8b7cff; background: #8b7cff; }
+.iris-settings-redesign .iris-switch.on span { left: 23px; background: #fff; }
+.iris-setting-link { display: flex; width: 100%; min-height: 58px; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border: 0; border-bottom: 1px solid #201e26; background: transparent; color: #f2f2f4; text-align: left; }
+.iris-setting-link span { display: grid; gap: 4px; }.iris-setting-link strong { font-size: 12px; }.iris-setting-link small { color: #a3a3ad; font-size: 10px; }.iris-setting-link > svg { width: 15px; color: #8a8a93; }
+.iris-privacy-copy { color: #a3a3ad; font-size: 11px; line-height: 1.6; }
+.iris-data-actions { display: flex; gap: 9px; padding-top: 12px; }
+.iris-data-actions { flex-wrap: wrap; }
+.iris-message-actions button.is-selected { background: #1a1822; color: #8b7cff; }
+.iris-danger-button { min-height: 44px; border-color: #663338; background: #251518; color: #ff9b9f; }
+.iris-settings-back { min-height: 44px; margin: 0 0 12px; padding: 0; border: 0; background: transparent; color: #a3a3ad; font-size: 12px; }
+.iris-settings-back { padding-right: 10px; }
+.iris-today-secondary { display: grid; justify-items: center; gap: 12px; padding-top: min(15vh, 120px); text-align: center; }
+.iris-today-secondary h2 { margin: 0; font-size: 26px; font-weight: 600; }
+.iris-today-secondary p { margin: 0 0 7px; color: #a3a3ad; font-size: 12px; }
+.iris-setting-slider { display: grid; gap: 11px; min-height: 70px; padding: 13px 0; border-bottom: 1px solid #201e26; color: #f2f2f4; font-size: 12px; }
+.iris-setting-slider span { display: flex; justify-content: space-between; }.iris-setting-slider strong { color: #8b7cff; font: 12px var(--iris-mono); }
+.iris-setting-slider input { width: 100%; accent-color: #8b7cff; }
+.iris-settings-redesign select { border: 1px solid #2e2c38; border-radius: 10px; background: #14131a; color: #f2f2f4; padding: 8px 10px; }
+.iris-mobile-nav { display: none !important; }
+.iris-toast { bottom: calc(92px + env(safe-area-inset-bottom)); background: #1a1822; color: #f2f2f4; }
+
+@media (max-width: 1023px) {
+  .iris-workspace { grid-template-columns: 72px minmax(0, 1fr); }
+  .iris-sidebar { width: 72px; }
+  .iris-sidebar .iris-brand > span:last-child, .iris-new-conversation, .iris-history-sidebar { display: none; }
+  .iris-sidebar-bottom .iris-nav-item > span { display: none; }
+  .iris-sidebar-bottom .iris-nav-item { width: 44px; justify-content: center; }
+  .iris-island { left: calc(72px + (100vw - 72px) / 2); width: min(520px, calc(100vw - 100px)); }
+  .iris-chat-compose, .iris-chat-shortcut-hint { left: calc(72px + (100vw - 72px) / 2); width: min(720px, calc(100vw - 120px)); }
+}
+@media (max-width: 767px) {
+  .iris-root { padding-top: 0; }
+  .iris-workspace { display: block; min-height: 100dvh; padding: 0; }
+  .iris-sidebar { display: none; }
+  .iris-main { padding: 0 14px calc(118px + env(safe-area-inset-bottom)); }
+  .iris-island { top: calc(8px + env(safe-area-inset-top)); left: 50%; width: calc(100vw - 28px); }
+  .iris-island.is-expanded { width: calc(100vw - 28px); }
+  .iris-island:has(.iris-island-voice-panel) { width: calc(100vw - 28px); }
+  .iris-root:has(.iris-island-voice-panel) .iris-sidebar { opacity: 1; }
+  .iris-topbar { display: none; }
+  .iris-chat-panel { min-height: calc(100dvh - 118px); padding-top: calc(80px + env(safe-area-inset-top)); }
+  .iris-chat-empty-hero { min-height: clamp(190px, 32vh, 270px); padding-top: 0; }
+  .iris-chat-empty-hero h2 { font-size: 28px; }
+  .iris-chat-compose { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 50%; width: calc(100vw - 28px); }
+  .iris-chat-shortcut-hint { display: none; }
+  .iris-main:has(.iris-settings) { padding-top: calc(88px + env(safe-area-inset-top)); }
+  .iris-settings-redesign { margin-top: 8px; }
+  .iris-settings-redesign .iris-settings-group { padding: 14px; }
+  .iris-today-secondary { padding-top: 23vh; }
+}
+@media (max-width: 390px) {
+  .iris-suggestions { gap: 7px; }
+  .iris-suggestions button { min-height: 60px; padding: 10px; font-size: 11px; }
+  .iris-island-menu { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .iris-island, .iris-island *, .iris-voice-level i, .iris-thinking-dots { animation: none !important; transition: opacity 150ms ease !important; }
+  .iris-island { transition-property: opacity !important; }
+}

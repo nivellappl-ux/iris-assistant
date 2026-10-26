@@ -183,7 +183,7 @@ router.post("/iris/speech", requireTrustedOrigin, limitAIRequests, async (req, r
 
 router.post("/iris/livekit/token", requireTrustedOrigin, limitAIRequests, async (req, res): Promise<void> => {
   if (process.env.NODE_ENV !== "development") {
-    res.status(403).json({ error: "A voz LiveKit está disponível apenas no ambiente de desenvolvimento." });
+    res.status(403).json({ error: "A conversa por voz está disponível apenas no ambiente de desenvolvimento." });
     return;
   }
 
@@ -191,7 +191,7 @@ router.post("/iris/livekit/token", requireTrustedOrigin, limitAIRequests, async 
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
   if (!serverUrl || !apiKey || !apiSecret) {
-    res.status(503).json({ error: "O serviço de voz LiveKit não está configurado." });
+    res.status(503).json({ error: "O serviço de voz não está configurado." });
     return;
   }
 

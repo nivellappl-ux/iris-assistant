@@ -7,7 +7,7 @@ import {
   type VoiceActivityProvider,
   type WakeWordProvider,
 } from './contracts';
-import { BrowserSpeechRecognitionProvider } from './browserSpeech';
+import { BrowserSpeechRecognitionProvider, IRIS_SPEECH_LANGUAGES } from './browserSpeech';
 import { IrisTextToSpeechProvider } from './irisTextToSpeech';
 import { BrowserWakeWordProvider } from './browserWakeWord';
 import { IrisEventBus } from './eventBus';
@@ -111,7 +111,7 @@ export class AudioController {
       this.recognition.start({
         onFinalTranscript: (text) => void this.handleTranscript(text),
         onError: (message) => this.fail(message),
-      });
+      }, { languages: IRIS_SPEECH_LANGUAGES });
       this.machine.transition('listening');
       this.events.emit({ type: 'voice.started' });
       this.resetInactivityTimer();

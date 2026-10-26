@@ -1,24 +1,33 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { ArrowUpRight, ChevronDown, MessageCircle, Mic, MicOff, Radio, Send, X } from 'lucide-react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { ChevronDown, MessageCircle, Mic, MicOff, MoreHorizontal, Radio, Send, Settings, Volume2, X } from 'lucide-react';
 import { VOICE_STATE_LABELS, type IrisVoiceState } from '../core/voice';
 import type { AppSection } from '../core/irisTypes';
 import type { BotStateName } from '../core/layout';
 import { BotEngine } from '../mochi/engine';
 import { MochiCanvas } from './MochiCanvas';
 
-type IslandView = 'home' | 'chat';
+type IslandView = 'home' | 'chat' | 'menu' | 'history';
 
 interface IRISIslandProps {
   desktopMode: boolean;
   mochiState: BotStateName;
   voiceActive: boolean;
+  voiceMuted: boolean;
   voiceState: IrisVoiceState;
   voiceNotice: string;
   wakeWordArmed: boolean;
   onNavigate: (section: AppSection) => void;
   onSendChat: (text: string) => void;
   onToggleVoice: () => void;
+  onToggleMute: () => void;
   onToggleWakeWord: () => void;
+  onNewConversation: () => void;
+  onVoiceSettings: () => void;
+  voiceTranscript: string;
+  voiceCaption: string;
+  captionsEnabled: boolean;
+  onToggleCaptions: () => void;
+  mascotAnimationEnabled: boolean;
 }
 
 const BOT_STATE_LABELS: Partial<Record<BotStateName, string>> = {
@@ -60,19 +69,30 @@ export function IRISIsland({
   desktopMode,
   mochiState,
   voiceActive,
+  voiceMuted,
   voiceState,
   voiceNotice,
   wakeWordArmed,
   onNavigate,
   onSendChat,
   onToggleVoice,
+  onToggleMute,
   onToggleWakeWord,
+  onNewConversation,
+  onVoiceSettings,
+  voiceTranscript,
+  voiceCaption,
+  captionsEnabled,
+  onToggleCaptions,
+  mascotAnimationEnabled,
 }: IRISIslandProps) {
   const [expanded, setExpanded] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [view, setView] = useState<IslandView>('home');
   const [chatText, setChatText] = useState('');
   const [engine] = useState(() => new BotEngine());
+  const islandRef = useRef<HTMLDivElement>(null);
+  const voiceWasActiveRef = useRef(voiceActive);
 
   const closePanel = () => {
     setExpanded(false);
@@ -94,23 +114,32 @@ export function IRISIsland({
   }, [expanded]);
 
   useEffect(() => {
+    if (voiceActive) {
+      setView('home');
+      setPinned(true);
+      setExpanded(true);
+    } else if (voiceWasActiveRef.current) {
+      closePanel();
+    }
+    voiceWasActiveRef.current = voiceActive;
+  }, [voiceActive]);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!islandRef.current?.contains(event.target as Node)) closePanel();
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [expanded]);
+
+  useEffect(() => {
     if (!desktopMode) return;
-    const height = !expanded ? 64 : view === 'chat' ? 320 : 270;
+    const height = !expanded ? 68 : view === 'chat' ? 320 : view === 'menu' || view === 'history' ? 330 : 300;
     void import('@tauri-apps/api/window')
       .then(({ getCurrentWindow, LogicalSize }) => getCurrentWindow().setSize(new LogicalSize(390, height)))
       .catch((error: unknown) => console.error('Não foi possível ajustar a janela da IRIS.', error));
   }, [desktopMode, expanded, view]);
-
-  const openChat = () => {
-    if (!desktopMode) {
-      closePanel();
-      onNavigate('chat');
-      return;
-    }
-    setView('chat');
-    setPinned(true);
-    setExpanded(true);
-  };
 
   const submitChat = (event: FormEvent) => {
     event.preventDefault();
@@ -120,11 +149,8 @@ export function IRISIsland({
     setChatText('');
   };
 
-  const togglePin = () => {
-    if (pinned && expanded) {
-      closePanel();
-      return;
-    }
+  const showMenu = () => {
+    setView(view === 'menu' ? 'home' : 'menu');
     setPinned(true);
     setExpanded(true);
   };
@@ -146,6 +172,7 @@ export function IRISIsland({
 
   return (
     <div
+      ref={islandRef}
       className={`iris-island${desktopMode ? ' is-native' : ''}${expanded ? ' is-expanded' : ''}`}
       data-testid="dynamic-island"
       data-state={stateKey}
@@ -162,11 +189,11 @@ export function IRISIsland({
         aria-expanded={expanded}
         aria-controls="iris-island-panel"
         aria-label={expanded ? 'Fechar o painel da IRIS' : 'Abrir o painel da IRIS'}
-        onClick={togglePin}
+        onClick={showMenu}
         data-testid="button-toggle-dynamic-island"
       >
         <span className="iris-island-mochi" aria-hidden="true">
-          <MochiCanvas state={mochiState} size={48} engine={engine} />
+          <MochiCanvas state={mochiState} size={48} engine={engine} animated={mascotAnimationEnabled} />
         </span>
         <span className="iris-island-name">
           <strong>IRIS</strong>
@@ -176,6 +203,9 @@ export function IRISIsland({
           <i /><i /><i />
         </span>
         <ChevronDown className={`iris-island-chevron${expanded ? ' is-open' : ''}`} aria-hidden="true" />
+      </button>
+      <button className="iris-island-menu-trigger" type="button" onClick={showMenu} aria-label="Abrir menu da IRIS" aria-expanded={expanded && view === 'menu'}>
+        <MoreHorizontal />
       </button>
 
       {expanded && (
@@ -215,13 +245,28 @@ export function IRISIsland({
             </div>
           </div>
 
-          {view === 'chat' ? (
+          {view === 'menu' ? (
+            <nav className="iris-island-menu" aria-label="Menu da IRIS">
+              <button type="button" onClick={() => { onNewConversation(); closePanel(); }}><MessageCircle />Nova conversa</button>
+              <button type="button" onClick={() => { setView('history'); onNavigate('chat'); }}><Volume2 />Histórico</button>
+              <button type="button" onClick={() => { onNavigate('home'); closePanel(); }}>Hoje</button>
+              <button type="button" onClick={() => { onNavigate('settings'); closePanel(); }}>Definições</button>
+              <button type="button" onClick={() => { onNavigate('help'); closePanel(); }}>Ajuda</button>
+            </nav>
+          ) : view === 'history' ? (
+            <div className="iris-island-view">
+              <div className="iris-island-view-title"><strong>Histórico</strong><button type="button" onClick={() => setView('menu')}>Voltar</button></div>
+              <button className="iris-history-item" type="button" onClick={() => { setView('home'); onNavigate('chat'); }}>
+                <span>Conversa guardada</span><small>Neste dispositivo</small>
+              </button>
+            </div>
+          ) : view === 'chat' ? (
             <div className="iris-island-view iris-island-chat">
               <div className="iris-island-view-title">
                 <strong>Conversar com a IRIS</strong>
                 <button type="button" onClick={() => setView('home')}>Voltar</button>
               </div>
-              <p className="iris-island-copy">A conversa usa Gemini através da integração da Replit, cobrada nos créditos Replit. A IRIS não está ligada ao Duvion nem acede a dados empresariais.</p>
+              <p className="iris-island-copy">Fala com a IRIS para fazer perguntas e pedir ajuda.</p>
               <form className="iris-island-form" onSubmit={submitChat}>
                 <input
                   autoFocus
@@ -236,6 +281,15 @@ export function IRISIsland({
             </div>
           ) : (
             <div className="iris-island-view">
+              {voiceActive && (
+                <div className="iris-island-voice-panel">
+                  <div className="iris-voice-level" aria-label="Indicador de nível indisponível nesta sessão"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
+                  <button type="button" aria-label="Definições de voz" onClick={onVoiceSettings}><Settings /></button>
+                  <button type="button" role="switch" aria-checked={captionsEnabled} aria-label="Legendas em direto" onClick={onToggleCaptions}>CC</button>
+                  <button type="button" aria-label={voiceMuted ? 'Ativar microfone' : 'Silenciar microfone'} aria-pressed={!voiceMuted} onClick={onToggleMute}>{voiceMuted ? <MicOff /> : <Mic />}</button>
+                  <button className="iris-voice-end" type="button" aria-label="Terminar sessão de voz" onClick={onToggleVoice}><X /></button>
+                </div>
+              )}
               <div
                 className={`iris-island-speech${isNotice ? ' is-notice' : ''}`}
                 data-kind={isNotice ? 'notice' : stateKey}
@@ -246,17 +300,14 @@ export function IRISIsland({
                 <span className="iris-island-speech-mark" aria-hidden="true"><MessageCircle /></span>
                 <span className="iris-island-speech-copy">
                   <span className="iris-island-speech-label">{isNotice ? 'AVISO DA IRIS' : statusLabel}</span>
-                  <span className="iris-island-speech-text">{voiceNotice || bubbleCopy}</span>
+                  <span className="iris-island-speech-text">{voiceTranscript || voiceNotice || bubbleCopy}</span>
                 </span>
               </div>
-              <div className="iris-island-panel-actions">
-                <button type="button" onClick={openChat} data-testid="button-open-island-chat">
-                  <MessageCircle />
-                  <span>Conversar</span>
-                  {!desktopMode && <ArrowUpRight aria-hidden="true" />}
-                </button>
-                <p className="iris-island-privacy">A app não guarda gravações. O navegador ou WebView pode processar áudio segundo as respetivas regras.</p>
-              </div>
+              {voiceActive && captionsEnabled && (voiceTranscript || voiceCaption) && (
+                <p className="iris-live-caption" aria-live="polite">
+                  {[voiceTranscript, voiceCaption].filter(Boolean).join('\n')}
+                </p>
+              )}
             </div>
           )}
         </section>

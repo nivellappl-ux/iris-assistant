@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import {
-  Activity, Archive, ArrowDownRight, ArrowUpRight, Bell, CalendarCheck, CalendarClock,
+  Activity, Archive, ArrowDownRight, ArrowUpRight, AudioWaveform, Bell, CalendarCheck, CalendarClock,
   Check, CheckCheck, ChevronDown, CircleHelp, Command, FileText, Focus, FolderKanban,
   Inbox as InboxIcon, Lightbulb, ListTodo, MessageCircle, Mic, MicOff, MoreHorizontal,
   Plus, Radio, Search, Send, Settings, Sparkles, Trash2, Volume2, X,
@@ -17,18 +17,13 @@ import { IrisTextToSpeechProvider } from './core/voice/irisTextToSpeech';
 import { LiveKitVoiceSession } from './core/voice/liveKitVoice';
 import { IRISIsland } from './components/IRISIsland';
 import { MochiCanvas } from './components/MochiCanvas';
+import { GoogleConnections } from './components/GoogleConnections';
 import type {
   AppSection, ChatMessage, InboxCategory, InboxItem, Project, Task, TaskFilter, TaskPriority,
 } from './core/irisTypes';
 import './iris-redesign.css';
 
 const FOCUS_DURATION = 45 * 60;
-
-const INITIAL_TASKS: Task[] = [
-  { id: 'seed-1', title: 'Rever o relatório de março', done: false, createdAt: Date.now() - 3_600_000 },
-  { id: 'seed-2', title: 'Preparar notas para a reunião', done: false, createdAt: Date.now() - 7_200_000 },
-  { id: 'seed-3', title: 'Enviar a proposta à Leonor', done: true, createdAt: Date.now() - 86_400_000 },
-];
 
 const INITIAL_CHAT: ChatMessage[] = [{
   id: 'welcome',
@@ -72,6 +67,34 @@ interface TaskDraft {
 type CaptureChoice = 'auto' | InboxCategory;
 
 const IRIS_TIME_ZONE = 'Africa/Luanda';
+const UI_PREFERENCES_KEY = 'iris.frontend-preferences.v1';
+
+interface IrisUiPreferences {
+  captionsEnabled: boolean;
+  mascotAnimationEnabled: boolean;
+  reducedMotion: boolean;
+  voiceSpeed: number;
+  voiceSensitivity: number;
+  voiceLanguage: string;
+}
+
+const DEFAULT_UI_PREFERENCES: IrisUiPreferences = {
+  captionsEnabled: true,
+  mascotAnimationEnabled: true,
+  reducedMotion: false,
+  voiceSpeed: 1,
+  voiceSensitivity: 60,
+  voiceLanguage: 'pt-AO',
+};
+
+function readUiPreferences(): IrisUiPreferences {
+  try {
+    const saved = localStorage.getItem(UI_PREFERENCES_KEY);
+    return saved ? { ...DEFAULT_UI_PREFERENCES, ...JSON.parse(saved) as Partial<IrisUiPreferences> } : DEFAULT_UI_PREFERENCES;
+  } catch {
+    return DEFAULT_UI_PREFERENCES;
+  }
+}
 
 function localDateInput(timestamp?: number) {
   if (!timestamp) return '';
@@ -238,7 +261,7 @@ function CaptureDialog({ text, category, file, saving, setText, setCategory, set
 
 function App() {
   const desktopMode = isTauri();
-  const [tasks, setTasks] = useState<Task[]>(() => irisCore.readState('tasks', INITIAL_TASKS));
+  const [tasks, setTasks] = useState<Task[]>(() => irisCore.readState('tasks', []));
   const [messages, setMessages] = useState<ChatMessage[]>(() => irisCore.readState('chat', INITIAL_CHAT));
   const [inboxItems, setInboxItems] = useState<InboxItem[]>(() => irisCore.readState('inbox', []));
   const [projects, setProjects] = useState<Project[]>(() => irisCore.readState('projects', []));
@@ -247,7 +270,7 @@ function App() {
     ? Math.max(0, Math.ceil((initialFocus.endAt - Date.now()) / 1000))
     : initialFocus.remaining);
   const [focusEndAt, setFocusEndAt] = useState<number | null>(initialFocus.endAt);
-  const [section, setSection] = useState<AppSection>('home');
+  const [section, setSection] = useState<AppSection>('chat');
   const [filter, setFilter] = useState<TaskFilter>('open');
   const [inboxFilter, setInboxFilter] = useState<'all' | InboxCategory>('all');
   const [selectedProject, setSelectedProject] = useState<string>('all');
@@ -255,6 +278,7 @@ function App() {
   const [mochiState, setMochiState] = useState<BotStateName>('idle');
   const [soundOn, setSoundOn] = useState(() => irisCore.readState('sound', true));
   const [voiceActive, setVoiceActive] = useState(false);
+  const [voiceMuted, setVoiceMuted] = useState(false);
   const [wakeWordArmed, setWakeWordArmed] = useState(false);
   const [wakeWordAutoStart, setWakeWordAutoStart] = useState(() => irisCore.readState('wakeWordAutoStart', true));
   const [aiConversationEnabled, setAIConversationEnabled] = useState(() => irisCore.readState('aiConversationEnabled', true));
@@ -275,6 +299,17 @@ function App() {
   const [projectName, setProjectName] = useState('');
   const [taskSearch, setTaskSearch] = useState('');
   const [chatInput, setChatInput] = useState('');
+  const [voiceTranscript, setVoiceTranscript] = useState('');
+  const [voiceCaption, setVoiceCaption] = useState('');
+  const [voiceSettingsOpen, setVoiceSettingsOpen] = useState(false);
+  const [uiPreferences] = useState(readUiPreferences);
+  const [captionsEnabled, setCaptionsEnabled] = useState(uiPreferences.captionsEnabled);
+  const [mascotAnimationEnabled, setMascotAnimationEnabled] = useState(uiPreferences.mascotAnimationEnabled);
+  const [reducedMotion, setReducedMotion] = useState(uiPreferences.reducedMotion);
+  const [voiceSpeed, setVoiceSpeed] = useState(uiPreferences.voiceSpeed);
+  const [voiceSensitivity, setVoiceSensitivity] = useState(uiPreferences.voiceSensitivity);
+  const [voiceLanguage, setVoiceLanguage] = useState(uiPreferences.voiceLanguage);
+  const [microphonePermission, setMicrophonePermission] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const [focusTick, setFocusTick] = useState(Date.now());
   const [activeEmote, setActiveEmote] = useState<BotEmoteName | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -328,6 +363,14 @@ function App() {
     irisCore.writeState('aiConversationEnabled', aiConversationEnabled);
   }, [aiConversationEnabled]);
   useEffect(() => {
+    const preferences: IrisUiPreferences = { captionsEnabled, mascotAnimationEnabled, reducedMotion, voiceSpeed, voiceSensitivity, voiceLanguage };
+    try {
+      localStorage.setItem(UI_PREFERENCES_KEY, JSON.stringify(preferences));
+    } catch (error) {
+      console.error('Não foi possível guardar as preferências da interface.', error);
+    }
+  }, [captionsEnabled, mascotAnimationEnabled, reducedMotion, voiceSpeed, voiceSensitivity, voiceLanguage]);
+  useEffect(() => {
     const controller = audioControllerRef.current;
     if (!controller) return;
     return controller.subscribe((event: IrisVoiceEvent) => {
@@ -364,6 +407,7 @@ function App() {
           }
           break;
         case 'transcription.completed':
+          setVoiceTranscript(event.text);
           setVoiceNotice('A IRIS está a preparar uma resposta…');
           break;
         case 'transcription.started':
@@ -373,6 +417,7 @@ function App() {
           setVoiceNotice('A IRIS está a pensar…');
           break;
         case 'speech.started':
+          setVoiceCaption(event.text);
           setVoiceNotice('A IRIS está a falar…');
           break;
         case 'speech.completed':
@@ -697,6 +742,7 @@ function App() {
   voiceTurnHandlerRef.current = async (rawValue: string) => {
     const value = rawValue.trim();
     if (!value) return '';
+    setVoiceTranscript(value);
     const normalized = value.toLocaleLowerCase('pt-PT').replace(/[.!?,;:]+$/, '');
     if (/^(pára|para|parar)(?:\s+(?:de ouvir|a ouvir|o microfone|a voz|comando de voz))?$|^(desliga|desligar|desativa|desativar)\s+(?:o\s+)?(?:microfone|comando de voz)$/.test(normalized)) {
       appendMessage('user', value, 'local');
@@ -747,6 +793,7 @@ function App() {
       const reply = await requestAIReply(value);
       appendMessage('assistant', reply, 'ai');
       Sound.play(VOICE_SOUND.fallback);
+      setVoiceCaption(reply);
       return reply;
     } catch (error) {
       const fallback = serverErrorMessage(error)
@@ -767,6 +814,7 @@ function App() {
       setWakeWordAutoStart(false);
       void liveKitVoice.stop();
       setVoiceActive(false);
+      setVoiceMuted(false);
       setVoiceState('idle');
       setVoiceNotice('A sessão de voz foi terminada e o microfone foi desligado.');
       setMochiState('idle');
@@ -778,24 +826,34 @@ function App() {
     if (audioController?.isActive || audioController?.isWakeWordArmed) audioController.stop('user');
     setWakeWordAutoStart(false);
     setWakeWordArmed(false);
-    setVoiceNotice('A ligar à sessão de voz LiveKit…');
+    setVoiceNotice('A preparar a conversa por voz…');
     setVoiceState('listening');
     Sound.resume();
     void liveKitVoice.start((status) => {
       setVoiceActive(status !== 'idle');
       setVoiceState(status);
-      if (status === 'listening') setVoiceNotice('À escuta. O áudio é enviado ao LiveKit para a conversa em tempo real.');
+      if (status === 'listening') setVoiceNotice('À escuta. Podes falar com a IRIS.');
       if (status === 'idle') setMochiState('idle');
     }).then(() => {
-      setVoiceNotice('Sessão LiveKit ativa. Podes falar ou interromper a resposta.');
+      setVoiceMuted(false);
+      setVoiceNotice('Estou a ouvir. Podes falar ou interromper a resposta.');
       Sound.play('open');
     }).catch((error: unknown) => {
       setVoiceActive(false);
       setVoiceState('error');
-      setVoiceNotice(error instanceof Error ? error.message : 'Não foi possível iniciar a voz LiveKit.');
+      setVoiceNotice('Não foi possível iniciar a conversa por voz. Verifica a permissão do microfone e tenta novamente.');
       Sound.play('error');
     });
     void Sound.preload().catch((error: unknown) => console.error('Não foi possível preparar o som de ativação.', error));
+  };
+
+  const toggleVoiceMute = () => {
+    const session = liveKitVoiceRef.current;
+    if (!session?.isActive) return;
+    const muted = !session.isMicrophoneMuted;
+    void session.setMicrophoneMuted(muted).then(() => setVoiceMuted(muted)).catch((error: unknown) => {
+      showToast(error instanceof Error ? error.message : 'Não foi possível alterar o microfone.');
+    });
   };
 
   const toggleWakeWord = () => {
@@ -874,8 +932,82 @@ function App() {
 
   const navSection = (next: AppSection) => {
     if (!['home', 'chat', 'settings', 'help'].includes(next)) return;
+    if (next === 'settings') setVoiceSettingsOpen(false);
     setSection(next);
   };
+
+  const startNewConversation = () => {
+    // The existing persistence contract stores one conversation. Keep it intact
+    // rather than silently replacing the user's saved history.
+    setSection('chat');
+    setVoiceSettingsOpen(false);
+    showToast('A conversa guardada continua disponível no histórico.');
+  };
+
+  const exportLocalData = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      conversation: messages,
+      preferences: { soundOn, wakeWordAutoStart, aiConversationEnabled },
+    };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'iris-dados-locais.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const deleteLocalData = () => {
+    if (!window.confirm('Apagar todos os dados locais deste dispositivo, incluindo conversa, definições e registos guardados anteriormente? Esta ação não pode ser anulada.')) return;
+    setMessages([]);
+    setSoundOn(true);
+    setWakeWordAutoStart(false);
+    setAIConversationEnabled(true);
+    setTasks([]);
+    setInboxItems([]);
+    setProjects([]);
+    setFocusEndAt(null);
+    setFocusRemaining(FOCUS_DURATION);
+    void Promise.all(inboxItems.flatMap((item) => item.attachment ? [irisCore.getCapability('attachments').remove(item.attachment.id).catch(() => undefined)] : []));
+    irisCore.writeState('tasks', []);
+    irisCore.writeState('inbox', []);
+    irisCore.writeState('projects', []);
+    irisCore.writeState('focus', { remaining: FOCUS_DURATION, endAt: null });
+    showToast('Dados locais apagados.');
+  };
+
+  useEffect(() => {
+    if (!navigator.permissions?.query) return;
+    void navigator.permissions.query({ name: 'microphone' as PermissionName })
+      .then((permission) => {
+        const update = () => setMicrophonePermission(permission.state);
+        update();
+        permission.addEventListener('change', update);
+      })
+      .catch(() => setMicrophonePermission('unknown'));
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const inField = Boolean(target?.closest('input, textarea, select, [contenteditable="true"]'));
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        startNewConversation();
+      } else if (event.key === '/' && !inField) {
+        event.preventDefault();
+        document.querySelector<HTMLInputElement>('.iris-chat-compose input')?.focus();
+      } else if (event.key === 'Escape' && voiceActive) {
+        toggleVoice();
+      } else if (event.code === 'Space' && !inField && voiceActive) {
+        event.preventDefault();
+        toggleVoice();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [voiceActive]);
 
   const today = dateHeading();
   const greeting = timeOfDayGreeting();
@@ -934,18 +1066,27 @@ function App() {
 
   if (desktopMode) {
     return (
-      <div className="iris-root is-native-window">
+      <div className="iris-root is-native-window" data-section={section}>
         <IRISIsland
           desktopMode
           mochiState={displayedMochiState}
           voiceActive={voiceActive}
+          voiceMuted={voiceMuted}
           voiceState={voiceState}
           voiceNotice={voiceNotice}
           wakeWordArmed={wakeWordArmed}
           onNavigate={navSection}
           onSendChat={sendChatText}
           onToggleVoice={toggleVoice}
+          onToggleMute={toggleVoiceMute}
           onToggleWakeWord={toggleWakeWord}
+          onNewConversation={startNewConversation}
+          onVoiceSettings={() => { setVoiceSettingsOpen(true); setSection('settings'); }}
+          voiceTranscript={voiceTranscript}
+          voiceCaption={voiceCaption}
+          captionsEnabled={captionsEnabled}
+          onToggleCaptions={() => setCaptionsEnabled((enabled) => !enabled)}
+          mascotAnimationEnabled={mascotAnimationEnabled}
         />
         {toast && <div className="iris-toast" role="status">{toast}</div>}
       </div>
@@ -953,26 +1094,43 @@ function App() {
   }
 
   return (
-    <div className="iris-root">
+    <div className="iris-root" data-section={section} data-reduced-motion={reducedMotion}>
       <IRISIsland
         desktopMode={false}
         mochiState={displayedMochiState}
         voiceActive={voiceActive}
+        voiceMuted={voiceMuted}
         voiceState={voiceState}
         voiceNotice={voiceNotice}
         wakeWordArmed={wakeWordArmed}
         onNavigate={navSection}
         onSendChat={sendChatText}
         onToggleVoice={toggleVoice}
+        onToggleMute={toggleVoiceMute}
         onToggleWakeWord={toggleWakeWord}
+        onNewConversation={startNewConversation}
+        onVoiceSettings={() => { setVoiceSettingsOpen(true); setSection('settings'); }}
+        voiceTranscript={voiceTranscript}
+        voiceCaption={voiceCaption}
+        captionsEnabled={captionsEnabled}
+        onToggleCaptions={() => setCaptionsEnabled((enabled) => !enabled)}
+        mascotAnimationEnabled={mascotAnimationEnabled}
       />
 
       <div className="iris-workspace">
         <aside className="iris-sidebar">
-          <button className="iris-brand" type="button" onClick={() => navSection('home')} aria-label="IRIS — Hoje">
-            <span className="iris-brand-mark"><MochiCanvas state="idle" size={58} className="iris-brand-character" /></span>
-            <span><strong>IRIS</strong><small>o teu espaço</small></span>
+          <button className="iris-brand" type="button" onClick={() => navSection('chat')} aria-label="IRIS — Conversa">
+            <span className="iris-brand-mark"><MochiCanvas state="idle" size={58} className="iris-brand-character" animated={mascotAnimationEnabled} /></span>
+            <span><strong>IRIS</strong><small>assistente</small></span>
           </button>
+
+          <button className="iris-new-conversation" type="button" onClick={startNewConversation}><Plus />Nova conversa <kbd>{/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘ K' : 'Ctrl K'}</kbd></button>
+          <div className="iris-history-sidebar">
+            <div className="iris-nav-label">Histórico</div>
+            {messages.length > 0 && <div className="iris-history-date">{dateLabel(messages[messages.length - 1].time).toLocaleUpperCase('pt-PT')}</div>}
+            {messages.length > 0 && <button className="iris-history-sidebar-item active" type="button" onClick={() => navSection('chat')}><MessageCircle /><span>Conversa guardada</span></button>}
+            {!messages.length && <div className="iris-history-empty">As conversas guardadas aparecem aqui.</div>}
+          </div>
 
           {['O teu espaço', 'Rotina'].map((group) => (
             <div className="iris-nav-group" key={group}>
@@ -996,9 +1154,10 @@ function App() {
 
           <div className="iris-sidebar-bottom">
             <div className="iris-local-state"><span className="iris-local-dot" /><span>Guardado neste dispositivo</span></div>
+            <GoogleConnections />
+            <button className={`iris-nav-item${section === 'home' ? ' active' : ''}`} type="button" onClick={() => navSection('home')}><CalendarCheck /><span>Hoje</span></button>
             <button className={`iris-nav-item${section === 'settings' ? ' active' : ''}`} type="button" onClick={() => navSection('settings')}><Settings /><span>Definições</span></button>
             <button className={`iris-nav-item${section === 'help' ? ' active' : ''}`} type="button" onClick={() => navSection('help')}><CircleHelp /><span>Ajuda</span></button>
-              <div className="iris-profile"><span className="iris-profile-mark">M</span><span><strong>Local</strong><small>Conversa e voz</small></span><ChevronDown /></div>
           </div>
         </aside>
 
@@ -1006,7 +1165,7 @@ function App() {
           <header className="iris-topbar">
             <div className="iris-breadcrumb"><span>IRIS</span><span>/</span><strong>{SECTION_LABELS[section]}</strong></div>
             <div className="iris-top-actions">
-              <span className="iris-private-label"><span />{voiceActive ? 'Voz via LiveKit' : 'Dados locais · provider de IA'}</span>
+              <span className="iris-private-label"><span />{voiceActive ? 'Conversa por voz' : 'IRIS disponível'}</span>
               <button className="iris-quiet-icon help" type="button" aria-label="Ajuda" onClick={() => navSection('help')}><CircleHelp /></button>
             </div>
           </header>
@@ -1026,21 +1185,19 @@ function App() {
             </div>
 
             {section === 'home' && (
-              <div className="iris-home-layout">
-                <aside className="iris-home-companion">
-                  <div className="iris-mochi-status" title={startupVoiceStatus ? voiceNotice : undefined}><span className={`iris-status-dot${showVoiceStatus ? ` is-${voiceState}` : ''}`} />{showVoiceStatus ? VOICE_STATE_LABELS[voiceState] : startupVoiceStatus || 'Por perto'}</div>
-                  <MochiCanvas state={displayedMochiState} size={190} engine={mochiEngineRef.current ?? undefined} />
-                  <div className="iris-companion-copy">
-                    <span className="iris-section-kicker">A IRIS</span>
-                    <h2>{voiceActive ? 'Estou à escuta.' : 'Estou aqui contigo.'}</h2>
-                    <p>Conversa comigo por texto ou voz. Os dados locais antigos foram mantidos neste dispositivo.</p>
-                  </div>
-                  <div className="iris-companion-actions">
-                    <button type="button" onClick={() => navSection('chat')}><MessageCircle />Conversar</button>
-                    <button type="button" onClick={toggleVoice}>{voiceActive ? <MicOff /> : <Mic />}{voiceActive ? 'Desativar voz' : 'Ativar voz'}</button>
-                  </div>
-                </aside>
-              </div>
+              <section className="iris-today-secondary">
+                <span className="iris-section-kicker">{today.toLocaleUpperCase('pt-PT')}</span>
+                <MochiCanvas state={displayedMochiState} size={100} engine={mochiEngineRef.current ?? undefined} animated={mascotAnimationEnabled} />
+                <h2>{greeting}</h2>
+                <p>Conversa com a IRIS por texto ou voz.</p>
+                <button className="iris-primary-button" type="button" onClick={() => navSection('chat')}><MessageCircle />Conversar</button>
+              </section>
+            )}
+            {section === 'chat' && (messages.length === 0 || messages.length === 1 && messages[0]?.id === 'welcome') && (
+              <section className="iris-chat-empty-hero">
+                <MochiCanvas state={displayedMochiState} size={112} engine={mochiEngineRef.current ?? undefined} animated={mascotAnimationEnabled} />
+                <h2>Como posso ajudar?</h2>
+              </section>
             )}
 
             {section === 'tasks' && (
@@ -1187,76 +1344,101 @@ function App() {
             {section === 'chat' && (
               <div className="iris-chat-layout">
                 <section className="iris-chat-panel">
-                  <div className="iris-chat-title">
-                    <MochiCanvas state={displayedMochiState} size={48} />
-                    <div>
-                      <strong>Conversa com a IRIS</strong>
-                      <span>{wakeWordArmed && voiceState === 'sleeping'
-                        ? 'À espera de “Acorda IRIS” ou “Wake up Iris”'
-                        : voiceActive
-                          ? VOICE_STATE_LABELS[voiceState]
-                          : aiConversationEnabled ? 'Provider de conversa configurado' : 'Conversa com IA desligada nas definições'}</span>
-                    </div>
-                    <button className={`iris-voice-button${voiceActive ? ` is-${voiceState}` : ''}`} type="button" aria-label={voiceActive ? 'Desativar voz' : 'Ativar voz'} aria-pressed={voiceActive} onClick={toggleVoice}>{voiceActive ? <Mic /> : <MicOff />}</button>
-                    <button
-                      className={`iris-voice-wake-button${wakeWordArmed ? ' is-armed' : ''}`}
-                      type="button"
-                      onClick={toggleWakeWord}
-                      aria-pressed={wakeWordArmed}
-                      aria-label={wakeWordArmed ? 'Desativar Acorda IRIS' : 'Ativar Acorda IRIS'}
-                      title={wakeWordArmed ? 'À espera de “Acorda IRIS” ou “Wake up Iris”' : 'Ativar palavra de despertar'}
-                    ><Radio /></button>
-                  </div>
-                  <div className="iris-messages" aria-live="polite">
-                    {messages.map((message) => <div className={`iris-message ${message.role}`} key={message.id}><span className="iris-message-avatar">{message.role === 'assistant' ? <Sparkles /> : 'Tu'}</span><div><div className="iris-message-bubble">{message.text}</div><time>{shortTime(message.time)}</time></div></div>)}
+                  <div className="iris-messages" aria-live="polite" aria-label="Histórico da conversa">
+                    {messages.filter((message, index) => !(index === 0 && message.id === 'welcome' && messages.length === 1)).map((message, index, visible) => (
+                      <div className={`iris-message ${message.role}`} key={message.id}>
+                        {message.role === 'user'
+                          ? <div className="iris-message-bubble">{message.text}<time>{shortTime(message.time)}</time></div>
+                          : <div className="iris-assistant-response">
+                              <MochiCanvas state={displayedMochiState} size={30} animated={mascotAnimationEnabled} />
+                              <div className="iris-assistant-copy"><p>{message.text}</p>
+                                <div className="iris-message-actions">
+                                  <button type="button" aria-label="Copiar resposta" title="Copiar" onClick={() => void navigator.clipboard?.writeText(message.text)}><FileText /></button>
+                                  <button type="button" aria-label="Gerar novamente" title="Gerar novamente" onClick={() => { const prior = [...visible].slice(0, index).reverse().find((item) => item.role === 'user'); if (prior) void sendChatText(prior.text); }}><Activity /></button>
+                                  <button type="button" aria-label="Gostei da resposta" title="Gostei" onClick={(event) => event.currentTarget.classList.toggle('is-selected')}><Sparkles /></button>
+                                </div>
+                              </div>
+                            </div>}
+                      </div>
+                    ))}
+                    {mochiState === 'thinking' && <div className="iris-thinking"><MochiCanvas state="thinking" size={30} animated={mascotAnimationEnabled} /><span>A pensar<span className="iris-thinking-dots">...</span></span></div>}
                     <div ref={chatEndRef} />
                   </div>
+                  {(messages.length === 0 || messages.length === 1 && messages[0]?.id === 'welcome') && (
+                    <div className="iris-suggestions" aria-label="Sugestões de conversa">
+                      {['Resume o meu dia', 'Ajuda-me a escrever um texto', 'Pesquisa sobre um tema', 'Planeia a minha semana'].map((suggestion) => <button type="button" key={suggestion} onClick={() => void sendChatText(suggestion)}>{suggestion}</button>)}
+                    </div>
+                  )}
                   <form className="iris-chat-compose" onSubmit={sendChat}>
-                    <input value={chatInput} onChange={(event) => setChatInput(event.target.value)} placeholder="Escreve uma mensagem à IRIS…" aria-label="Mensagem para a IRIS" maxLength={4000} />
-                    <button className="iris-quiet-icon" type="button" onClick={toggleVoice} aria-label={voiceActive ? 'Desativar voz' : 'Ativar voz'} aria-pressed={voiceActive}>{voiceActive ? <Mic /> : <MicOff />}</button>
-                    <button className="iris-send-button" type="submit" aria-label="Enviar mensagem"><Send /></button>
+                    <button className="iris-chat-attach" type="button" aria-label="Anexar ficheiro" onClick={() => showToast('O envio de anexos na conversa não está disponível.')}><Plus /></button>
+                    <textarea value={chatInput} onChange={(event) => setChatInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void sendChatText(chatInput); setChatInput(''); } }} placeholder="Pergunta à IRIS…" aria-label="Mensagem para a IRIS" maxLength={4000} rows={1} />
+                    <button className={`iris-chat-mic${voiceActive ? ' active' : ''}`} type="button" onClick={toggleVoice} aria-label={voiceActive ? 'Terminar conversa por voz' : 'Iniciar conversa por voz'} aria-pressed={voiceActive}>{voiceActive ? <MicOff /> : <Mic />}</button>
+                    {chatInput.trim()
+                      ? <button className="iris-send-button" type="submit" aria-label="Enviar mensagem"><Send /></button>
+                      : <button className={`iris-chat-voice${voiceActive ? ' active' : ''}`} type="button" onClick={toggleVoice} aria-label={voiceActive ? 'Terminar conversa por voz' : 'Conversar por voz com a IRIS'} aria-pressed={voiceActive} data-testid="button-voice-conversation"><AudioWaveform /></button>}
                   </form>
+                  <p className="iris-chat-shortcut-hint">Enter envia · Shift + Enter cria uma nova linha · / para escrever</p>
                   {voiceNotice && <p className={`iris-voice-status is-${voiceState}`} role="status" aria-live="polite">{voiceNotice}</p>}
                 </section>
-                <aside className="iris-command-guide">
-                  <span className="iris-section-kicker">CONVERSA</span>
-                  <h2>Escreve com naturalidade</h2>
-                  <p>As mensagens livres são processadas pelo Gemini através da integração de IA da Replit e cobradas nos créditos Replit. A IRIS ainda não está ligada ao Duvion e não pode consultar dados empresariais nem executar ações.</p>
-                  <p>Também podes ativar a voz. O navegador ou WebView pode processar áudio segundo as suas regras; a IRIS não guarda gravações.</p>
-                </aside>
               </div>
             )}
 
             {section === 'settings' && (
-              <section className="iris-settings">
-                <div className="iris-settings-group">
-                  <div className="iris-section-heading"><div><span className="iris-section-kicker">PREFERÊNCIAS</span><h2>O teu espaço</h2></div></div>
-                  <div className="iris-setting-row"><div><strong>Sons da IRIS</strong><p>Pequenos sons de interface e de voz.</p></div><button className={`iris-switch${soundOn ? ' on' : ''}`} type="button" onClick={toggleSound} role="switch" aria-checked={soundOn} aria-label={soundOn ? 'Silenciar sons' : 'Ativar sons'}><span /></button></div>
-                  <div className="iris-setting-row"><div><strong>IA de conversa</strong><p>As mensagens livres são processadas pelo Gemini através da integração de IA da Replit e cobradas nos créditos Replit. A IRIS não está ligada ao Duvion. Só AI_PROVIDER=openai envia mensagens à OpenAI; os registos locais antigos não são enviados.</p></div><button className={`iris-switch${aiConversationEnabled ? ' on' : ''}`} type="button" onClick={() => setAIConversationEnabled((enabled) => !enabled)} role="switch" aria-checked={aiConversationEnabled} aria-label={aiConversationEnabled ? 'Desativar IA de conversa e voz' : 'Ativar IA de conversa e voz'}><span /></button></div>
-                  <div className="iris-setting-row"><div><strong>Dados locais</strong><p>A conversa atual continua guardada neste dispositivo.</p></div><span className="iris-setting-status"><span />Ativo</span></div>
-                  <div className="iris-setting-row"><div><strong>Despertar ao abrir</strong><p>A IRIS tenta ficar à espera de “Acorda IRIS” ou “Wake up Iris” ao abrir. O navegador pode exigir autorização ou um primeiro toque.</p></div><button className={`iris-switch${wakeWordAutoStart ? ' on' : ''}`} type="button" onClick={() => setWakeWordAutoStart((enabled) => !enabled)} role="switch" aria-checked={wakeWordAutoStart} aria-label={wakeWordAutoStart ? 'Desativar espera por voz ao abrir' : 'Ativar espera por voz ao abrir'}><span /></button></div>
-                  <div className="iris-setting-row"><div><strong>Privacidade de voz</strong><p>A conversa LiveKit só começa após tocares no botão e autorizares o microfone; durante a sessão, o áudio é enviado aos serviços configurados de reconhecimento, modelo e síntese de voz. Se ativares a espera pela palavra de ativação, o navegador ou WebView pode processar áudio segundo as respetivas regras. A IRIS não guarda gravações. O protótipo LiveKit está limitado ao desenvolvimento e não consulta dados da Duvion.</p></div><span className="iris-setting-status">{wakeWordArmed ? 'À espera da palavra' : voiceActive ? 'Ativa' : wakeWordAutoStart ? 'A tentar ao abrir' : 'Desligada'}</span></div>
-                </div>
-                <div className="iris-settings-group">
-                  <div className="iris-section-heading"><div><span className="iris-section-kicker">DADOS</span><h2>Gerir o que guardaste</h2></div></div>
-                  <div className="iris-setting-row"><div><strong>Limpar conversa</strong><p>Apaga as mensagens guardadas neste dispositivo.</p></div><button className="iris-secondary-button" type="button" onClick={() => { if (window.confirm('Apagar a conversa guardada neste dispositivo?')) { setMessages([]); showToast('Conversa apagada.'); } }}>Limpar conversa</button></div>
-                  <div className="iris-setting-row"><div><strong>Registos anteriores</strong><p>Os dados locais antigos de tarefas, inbox, projetos e foco foram mantidos neste dispositivo, mas estas funcionalidades já não estão disponíveis.</p></div><span className="iris-setting-status">Preservados</span></div>
-                </div>
-                <div className="iris-settings-group">
-                  <div className="iris-section-heading"><div><span className="iris-section-kicker">A IRIS</span><h2>Um pouco de personalidade</h2></div></div>
-                  <p className="iris-settings-intro">A mesma IRIS de sempre, com algumas reações para acompanhar o teu ritmo.</p>
-                  <div className="iris-emote-actions">{([['happy', 'Alegre'], ['proud', 'Orgulhosa'], ['wink', 'Piscar']] as [BotEmoteName, string][]).map(([emote, label]) => <button className="iris-secondary-button" type="button" key={emote} onClick={() => runEmote(emote)}>{label}</button>)}</div>
-                  {activeEmote && <span className="iris-settings-intro">A IRIS está {activeEmote === 'proud' ? 'orgulhosa' : activeEmote === 'wink' ? 'a piscar' : 'alegre'}.</span>}
-                </div>
+              <section className="iris-settings iris-settings-redesign">
+                {voiceSettingsOpen ? (
+                  <>
+                    <button className="iris-settings-back" type="button" onClick={() => setVoiceSettingsOpen(false)}>‹ <span>Definições</span></button>
+                    <h2 className="iris-settings-title">Voz e escuta</h2>
+                    <div className="iris-settings-group"><span className="iris-section-kicker">VOZ DA IRIS</span>
+                      <div className="iris-setting-row"><div><strong>Voz</strong><p>Usa a voz já disponível no dispositivo.</p></div><span className="iris-setting-status">Português</span></div>
+                      <div className="iris-setting-row"><div><strong>Testar voz</strong><p>A voz é reproduzida durante uma conversa por voz.</p></div><button className="iris-secondary-button" type="button" onClick={() => { setVoiceNotice('Inicia uma conversa por voz para testar a resposta falada.'); setSection('chat'); setVoiceSettingsOpen(false); }}>Testar voz</button></div>
+                      <label className="iris-setting-slider"><span>Velocidade da fala <strong>{voiceSpeed.toFixed(1)}×</strong></span><input type="range" min="0.5" max="1.5" step="0.1" value={voiceSpeed} onChange={(event) => setVoiceSpeed(Number(event.target.value))} /></label>
+                    </div>
+                    <div className="iris-settings-group"><span className="iris-section-kicker">ESCUTA</span>
+                      <div className="iris-setting-row"><div><strong>Ativação por palavra (Wake)</strong><p>Acorda IRIS ou Wake up Iris.</p></div><button className={`iris-switch${wakeWordArmed ? ' on' : ''}`} type="button" role="switch" aria-checked={wakeWordArmed} aria-label="Ativação por palavra" onClick={toggleWakeWord}><span /></button></div>
+                      <div className="iris-setting-row"><div><strong>Iniciar a escutar ao abrir</strong><p>Depende da autorização do microfone neste navegador.</p></div><button className={`iris-switch${wakeWordAutoStart ? ' on' : ''}`} type="button" role="switch" aria-checked={wakeWordAutoStart} aria-label="Iniciar a escutar ao abrir" onClick={() => setWakeWordAutoStart((enabled) => !enabled)}><span /></button></div>
+                      <label className="iris-setting-slider"><span>Sensibilidade do microfone <strong>{voiceSensitivity}</strong></span><input type="range" min="0" max="100" value={voiceSensitivity} onChange={(event) => setVoiceSensitivity(Number(event.target.value))} /></label>
+                    </div>
+                    <div className="iris-settings-group"><span className="iris-section-kicker">LEGENDAS</span>
+                      <div className="iris-setting-row"><div><strong>Legendas em direto</strong></div><button className={`iris-switch${captionsEnabled ? ' on' : ''}`} type="button" role="switch" aria-checked={captionsEnabled} aria-label="Legendas em direto" onClick={() => setCaptionsEnabled((enabled) => !enabled)}><span /></button></div>
+                      <label className="iris-setting-row"><div><strong>Idioma</strong></div><select value={voiceLanguage} onChange={(event) => setVoiceLanguage(event.target.value)} aria-label="Idioma da voz"><option value="pt-AO">Português (Angola)</option><option value="pt-PT">Português (Portugal)</option><option value="en-US">English</option></select></label>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="iris-settings-title">Definições</h2>
+                    <div className="iris-settings-group"><span className="iris-section-kicker">VOZ</span>
+                      <button className="iris-setting-link" type="button" onClick={() => setVoiceSettingsOpen(true)}><span><strong>Voz e escuta</strong><small>Voz, velocidade, palavra de ativação e idioma</small></span><ArrowUpRight /></button>
+                      <div className="iris-setting-row"><div><strong>Microfone</strong><p>A autorização é controlada pelo browser ou WebView.</p></div><button className="iris-setting-status" type="button" onClick={() => { if (microphonePermission === 'denied') showToast('Ativa o microfone nas definições de privacidade do navegador ou WebView.'); else if (microphonePermission !== 'granted') showToast('Toca no microfone para pedir autorização.'); }} aria-label="Estado e ajuda do microfone">{microphonePermission === 'granted' ? 'Autorizado' : microphonePermission === 'denied' ? 'Negado · Como ativar' : microphonePermission === 'prompt' ? 'Pendente' : 'Indisponível'}</button></div>
+                      <div className="iris-setting-row"><div><strong>Legendas na ilha</strong></div><button className={`iris-switch${captionsEnabled ? ' on' : ''}`} type="button" role="switch" aria-checked={captionsEnabled} aria-label="Legendas na ilha" onClick={() => setCaptionsEnabled((enabled) => !enabled)}><span /></button></div>
+                    </div>
+                    <div className="iris-settings-group"><span className="iris-section-kicker">APARÊNCIA</span>
+                      <div className="iris-setting-row"><div><strong>Animação do mascote</strong><p>Olhos e movimentos da IRIS.</p></div><button className={`iris-switch${mascotAnimationEnabled ? ' on' : ''}`} type="button" role="switch" aria-checked={mascotAnimationEnabled} aria-label="Animação do mascote" onClick={() => setMascotAnimationEnabled((enabled) => !enabled)}><span /></button></div>
+                      <div className="iris-setting-row"><div><strong>Reduzir movimento</strong><p>Reduz animação e transições da interface.</p></div><button className={`iris-switch${reducedMotion ? ' on' : ''}`} type="button" role="switch" aria-checked={reducedMotion} aria-label="Reduzir movimento" onClick={() => setReducedMotion((enabled) => !enabled)}><span /></button></div>
+                      <div className="iris-setting-row"><div><strong>Sons da IRIS</strong><p>Pequenos sons de interface e de voz.</p></div><button className={`iris-switch${soundOn ? ' on' : ''}`} type="button" role="switch" aria-checked={soundOn} aria-label="Sons da IRIS" onClick={toggleSound}><span /></button></div>
+                      <div className="iris-setting-row"><div><strong>IA de conversa</strong><p>Controla respostas por IA e voz.</p></div><button className={`iris-switch${aiConversationEnabled ? ' on' : ''}`} type="button" role="switch" aria-checked={aiConversationEnabled} aria-label="IA de conversa" onClick={() => setAIConversationEnabled((enabled) => !enabled)}><span /></button></div>
+                      <div className="iris-setting-row"><div><strong>Personalidade da IRIS</strong><p>Experimenta uma reação do mascote.</p></div><div className="iris-emote-actions">{([['happy', 'Alegre'], ['proud', 'Orgulhosa'], ['wink', 'Piscar']] as [BotEmoteName, string][]).map(([emote, label]) => <button className="iris-secondary-button" type="button" key={emote} onClick={() => runEmote(emote)}>{label}</button>)}</div></div>
+                    </div>
+                    <div className="iris-settings-group"><span className="iris-section-kicker">PRIVACIDADE E DADOS</span>
+                      <p className="iris-privacy-copy">A app não guarda gravações. O navegador ou WebView pode processar áudio segundo as respetivas regras.</p>
+                      <div className="iris-setting-row"><div><strong>Dados neste dispositivo</strong><p>A conversa e as preferências guardadas localmente.</p></div><span className="iris-setting-status">Ativo</span></div>
+                      <div className="iris-data-actions"><button className="iris-secondary-button" type="button" onClick={exportLocalData}>Exportar</button><button className="iris-secondary-button" type="button" onClick={() => { if (window.confirm('Apagar a conversa guardada neste dispositivo?')) { setMessages([]); showToast('Conversa apagada.'); } }}>Limpar conversa</button><button className="iris-danger-button" type="button" onClick={deleteLocalData}>Apagar dados locais</button></div>
+                    </div>
+                    <div className="iris-settings-group"><span className="iris-section-kicker">SOBRE</span>
+                      <button className="iris-setting-link" type="button" onClick={() => navSection('help')}><span><strong>Ajuda</strong><small>Como conversar com a IRIS</small></span><ArrowUpRight /></button>
+                      <div className="iris-setting-row"><div><strong>Versão</strong></div><span className="iris-setting-status">IRIS</span></div>
+                    </div>
+                  </>
+                )}
               </section>
             )}
 
             {section === 'help' && (
               <section className="iris-help-page">
                 <div className="iris-section-heading"><div><span className="iris-section-kicker">COMEÇAR</span><h2>Conversa com a IRIS</h2></div></div>
-                <p className="iris-help-lead">A IRIS mantém conversa por texto e voz usando Gemini através da integração da Replit, cobrada nos créditos Replit. A IRIS não está ligada ao Duvion e não pode consultar dados empresariais nem executar ações. Os registos locais anteriores de tarefas, inbox, projetos e foco foram preservados, mas já não podem ser consultados nesta versão.</p>
+                <p className="iris-help-lead">Conversa com a IRIS por texto ou voz e ajusta as tuas preferências nas definições. A disponibilidade da voz depende do navegador e da autorização do microfone.</p>
                 <div className="iris-help-list">
-                  <div><MessageCircle /><span><strong>Conversa por texto</strong><small>Escreve à IRIS na secção Conversar. Gemini é o provider padrão através da Replit; a OpenAI só é usada se AI_PROVIDER=openai estiver configurado.</small></span></div>
+                  <div><MessageCircle /><span><strong>Conversa por texto</strong><small>Escreve à IRIS no campo de mensagem. Enter envia; Shift + Enter cria uma nova linha.</small></span></div>
                   <div><Mic /><span><strong>Conversa por voz</strong><small>O reconhecimento depende do navegador ou WebView e da autorização do microfone. Podes desligar a espera automática nas definições.</small></span></div>
                   <div><Settings /><span><strong>Privacidade e preferências</strong><small>Ativa ou desativa a conversa com IA, a voz e os sons nas definições. A IRIS não guarda gravações.</small></span></div>
                 </div>

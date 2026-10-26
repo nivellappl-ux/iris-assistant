@@ -7,9 +7,10 @@ interface MochiCanvasProps {
   size?: number;
   engine?: BotEngine;
   className?: string;
+  animated?: boolean;
 }
 
-export function MochiCanvas({ state, size = 144, engine, className = '' }: MochiCanvasProps) {
+export function MochiCanvas({ state, size = 144, engine, className = '', animated = true }: MochiCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ownEngineRef = useRef<BotEngine | null>(null);
   if (!ownEngineRef.current) ownEngineRef.current = new BotEngine();
@@ -35,6 +36,10 @@ export function MochiCanvas({ state, size = 144, engine, className = '' }: Mochi
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!animated) {
+        context.clearRect(0, 0, width, height);
+        engineRef.current?.draw(context, width, height);
+      }
     };
 
     const tick = (now: number) => {
@@ -44,10 +49,10 @@ export function MochiCanvas({ state, size = 144, engine, className = '' }: Mochi
       }
       const delta = Math.min((now - previous) / 1000, 0.05);
       previous = now;
-      engineRef.current?.update(delta);
+       if (animated) engineRef.current?.update(delta);
       context.clearRect(0, 0, width, height);
       engineRef.current?.draw(context, width, height);
-      frame = requestAnimationFrame(tick);
+       frame = animated ? requestAnimationFrame(tick) : 0;
     };
 
     const start = () => {
@@ -82,11 +87,22 @@ export function MochiCanvas({ state, size = 144, engine, className = '' }: Mochi
       intersectionObserver?.disconnect();
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [size]);
+  }, [size, animated]);
 
   useEffect(() => {
     engineRef.current?.setState(state, true);
-  }, [state]);
+    if (!animated && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      if (context) {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        context.setTransform(dpr, 0, 0, dpr, 0, 0);
+        context.clearRect(0, 0, rect.width, rect.height);
+        engineRef.current?.draw(context, rect.width, rect.height);
+      }
+    }
+  }, [state, animated]);
 
   const look = (event: MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
