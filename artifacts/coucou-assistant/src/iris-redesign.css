@@ -1068,8 +1068,15 @@ html, body, #root, .iris-root { background: #0c0b10; }
   .iris-root { padding-top: 0; }
   .iris-workspace { display: block; min-height: 100dvh; padding: 0; }
   .iris-sidebar { display: none; }
-  .iris-sidebar.is-mobile-open { position: fixed; inset: 0 auto 0 0; z-index: 60; display: flex; width: min(320px, calc(100vw - 28px)); overflow-y: auto; padding: max(18px, env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 18px 0 48px #0009; }
-  .iris-sidebar-backdrop { position: fixed; inset: 0; z-index: 59; display: block; border: 0; background: #050408b8; backdrop-filter: blur(3px); }
+  .iris-sidebar.is-mobile-open { position: fixed; inset: 0 auto 0 0; z-index: 100; display: flex; width: min(320px, calc(100vw - 28px)); align-items: stretch; overflow-y: auto; padding: max(18px, env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 18px 0 48px #0009; }
+  .iris-sidebar.is-mobile-open .iris-brand > span:last-child,
+  .iris-sidebar.is-mobile-open .iris-new-conversation,
+  .iris-sidebar.is-mobile-open .iris-history-sidebar { display: block; }
+  .iris-sidebar.is-mobile-open .iris-new-conversation { display: flex; }
+  .iris-sidebar.is-mobile-open .iris-sidebar-bottom { width: 100%; justify-items: stretch; }
+  .iris-sidebar.is-mobile-open .iris-sidebar-bottom .iris-nav-item { width: 100%; justify-content: flex-start; padding: 0 11px; }
+  .iris-sidebar.is-mobile-open .iris-sidebar-bottom .iris-nav-item > span { display: block; }
+  .iris-sidebar-backdrop { position: fixed; inset: 0; z-index: 99; display: block; border: 0; background: #050408b8; backdrop-filter: blur(3px); }
   .iris-mobile-sidebar-close { display: grid; width: 36px; height: 36px; flex: none; align-self: flex-end; place-items: center; margin: 0 0 8px; border: 1px solid #302d36; border-radius: 50%; background: #1b1920; color: #f2f2f4; }
   .iris-mobile-sidebar-close svg { width: 17px; height: 17px; }
   .iris-main { padding: 0 14px calc(118px + env(safe-area-inset-bottom)); }
@@ -1085,7 +1092,7 @@ html, body, #root, .iris-root { background: #0c0b10; }
   .iris-chat-panel { min-height: calc(100dvh - 118px); padding-top: calc(80px + env(safe-area-inset-top)); }
   .iris-chat-empty-hero { min-height: clamp(190px, 32vh, 270px); padding-top: 0; }
   .iris-chat-empty-hero h2 { font-size: 28px; }
-  .iris-chat-compose { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 50%; width: calc(100vw - 28px); }
+  .iris-chat-compose { position: fixed; bottom: calc(72px + env(safe-area-inset-bottom)); left: 50%; width: calc(100vw - 28px); }
   .iris-chat-shortcut-hint { display: none; }
   .iris-main:has(.iris-settings) { padding-top: calc(88px + env(safe-area-inset-top)); }
   .iris-settings-redesign { margin-top: 8px; }
