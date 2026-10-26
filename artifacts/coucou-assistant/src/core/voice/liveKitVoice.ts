@@ -1,4 +1,4 @@
-import type { Room } from "livekit-client";
+import { Room, RoomEvent, Track } from "livekit-client";
 
 interface LiveKitTokenResponse {
   serverUrl: string;
@@ -29,20 +29,11 @@ export class LiveKitVoiceSession {
 
   async start(onStatus: (status: "listening" | "speaking" | "idle") => void): Promise<void> {
     if (this.active) return;
-    const response = await fetch("/api/iris/livekit/token", { method: "POST" });
-    const payload = await response.json().catch(() => null) as Partial<LiveKitTokenResponse> | { error?: string } | null;
-    if (!response.ok) {
-      throw new Error(payload && "error" in payload && payload.error
-        ? payload.error
-        : "Não foi possível iniciar a sessão de voz.");
-    }
-    if (!payload || !("serverUrl" in payload) || !payload.serverUrl || !payload.participantToken) {
-      throw new Error("O servidor devolveu dados de sessão inválidos.");
-    }
-
-    const { Room: LiveKitRoom, RoomEvent, Track } = await import("livekit-client");
-    const room = new LiveKitRoom({ adaptiveStream: true, dynacast: true });
+    const room = new Room({ adaptiveStream: true, dynacast: true });
     this.room = room;
+    // Unlock playback synchronously from the user's click before the token request.
+    const audioUnlock = room.startAudio();
+    void audioUnlock.catch(() => undefined);
     room.on(RoomEvent.TrackSubscribed, (track) => {
       if (track.kind !== Track.Kind.Audio) return;
       const audio = track.attach() as HTMLAudioElement;
@@ -71,7 +62,19 @@ export class LiveKitVoiceSession {
     });
 
     try {
+      const response = await fetch("/api/iris/livekit/token", { method: "POST" });
+      const payload = await response.json().catch(() => null) as Partial<LiveKitTokenResponse> | { error?: string } | null;
+      if (!response.ok) {
+        throw new Error(payload && "error" in payload && payload.error
+          ? payload.error
+          : "Não foi possível iniciar a sessão de voz.");
+      }
+      if (!payload || !("serverUrl" in payload) || !payload.serverUrl || !payload.participantToken) {
+        throw new Error("O servidor devolveu dados de sessão inválidos.");
+      }
+
       await room.connect(payload.serverUrl, payload.participantToken);
+      await audioUnlock;
       await room.startAudio();
       await room.localParticipant.setMicrophoneEnabled(true);
       this.microphoneMuted = false;

@@ -860,7 +860,9 @@ function App() {
     }).catch((error: unknown) => {
       setVoiceActive(false);
       setVoiceState('error');
-      setVoiceNotice('Não foi possível iniciar a conversa por voz. Verifica a permissão do microfone e tenta novamente.');
+      setVoiceNotice(error instanceof Error
+        ? `Não foi possível iniciar a conversa por voz: ${error.message}`
+        : 'Não foi possível iniciar a conversa por voz. Verifica a permissão do microfone e tenta novamente.');
       Sound.play('error');
     });
     void Sound.preload().catch((error: unknown) => console.error('Não foi possível preparar o som de ativação.', error));

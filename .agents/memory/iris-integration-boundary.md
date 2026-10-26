@@ -27,6 +27,12 @@ The user requests LiveKit voice on the published IRIS site. Keep written chat pu
 
 **How to apply:** Protect LiveKit token issuance with Clerk identity; do not gate text chat. Use a feminine pt-PT voice for audio and verify production voice-worker availability separately from API token issuance.
 
+Browser audio playback must be unlocked synchronously from the user's click/tap before any network wait; otherwise autoplay policies can block incoming LiveKit audio. Keep playback failures visible.
+
+**Why:** LiveKit's browser SDK requires `Room.startAudio()` to be triggered by a direct user interaction, but the session setup originally waited for the token request before calling it.
+
+**How to apply:** Invoke `Room.startAudio()` before the first `await` in the voice-start handler, then check playback again after connecting.
+
 **Why:** An already-running API process continued signing tokens with its previous credentials after environment values changed, while fresh shell checks used the new values; LiveKit rejected those stale signatures.
 
 **How to apply:** After changing LiveKit credentials, restart both API and agent workflows so neither keeps using stale process values.
