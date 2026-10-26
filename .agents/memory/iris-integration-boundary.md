@@ -19,12 +19,14 @@ Wake-word standby should auto-start on app open by default when microphone permi
 
 **Why:** The user asked to remove demonstration-mode replies; only a real general-purpose provider should handle free-form conversation, and the app has no verified Duvion data or actions.
 
-## LiveKit voice prototype
+## LiveKit voice access
 
-The user selected LiveKit Cloud for a temporary IRIS voice prototype, with no Duvion integration, and approved token issuance only in development while relying on the private Replit preview. Keep production token issuance blocked until the app has real user authentication. The voice agent uses LiveKit inference; OpenAI configuration remains untouched.
+The user requests LiveKit voice on the published IRIS site. Keep written chat public and require a real signed-in session only for voice. LiveKit credentials stay server-side, and room tokens stay short-lived and room-scoped. Keep Duvion disconnected and OpenAI configuration untouched.
 
-**Why:** There is no app-level login in this workspace, and the user explicitly chose a development-only prototype instead of adding authentication or connecting Duvion.
+**Why:** The user changed the earlier development-only voice decision by requesting authentication so published voice can be used safely.
 
-**How to apply:** Keep LiveKit credentials server-side, issue short-lived room-scoped tokens only in development, and do not expose the prototype in production or imply that preview access authenticates an IRIS user. After changing credentials, restart both the API and agent workflows so neither keeps using stale process values.
+**How to apply:** Protect LiveKit token issuance with Clerk identity; do not gate text chat. Verify production voice-worker availability separately from API token issuance.
 
-**Why:** An already-running API process continued signing tokens with its previous credentials after the environment values changed, while fresh shell checks used the new values; LiveKit rejected those stale signatures.
+**Why:** An already-running API process continued signing tokens with its previous credentials after environment values changed, while fresh shell checks used the new values; LiveKit rejected those stale signatures.
+
+**How to apply:** After changing LiveKit credentials, restart both API and agent workflows so neither keeps using stale process values.
