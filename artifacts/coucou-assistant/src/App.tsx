@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } fro
 import {
   Activity, Archive, ArrowDownRight, ArrowUpRight, AudioWaveform, Bell, CalendarCheck, CalendarClock,
   Check, CheckCheck, ChevronDown, CircleHelp, Command, FileText, Focus, FolderKanban,
-  Inbox as InboxIcon, Lightbulb, ListTodo, MessageCircle, Mic, MicOff, MoreHorizontal,
+  Inbox as InboxIcon, Lightbulb, ListTodo, Menu, MessageCircle, Mic, MicOff, MoreHorizontal,
   Plus, Radio, Search, Send, Settings, Sparkles, Trash2, Volume2, X,
   type LucideIcon,
 } from 'lucide-react';
@@ -271,6 +271,7 @@ function App() {
     : initialFocus.remaining);
   const [focusEndAt, setFocusEndAt] = useState<number | null>(initialFocus.endAt);
   const [section, setSection] = useState<AppSection>('chat');
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [filter, setFilter] = useState<TaskFilter>('open');
   const [inboxFilter, setInboxFilter] = useState<'all' | InboxCategory>('all');
   const [selectedProject, setSelectedProject] = useState<string>('all');
@@ -312,6 +313,14 @@ function App() {
   const [microphonePermission, setMicrophonePermission] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const [focusTick, setFocusTick] = useState(Date.now());
   const [activeEmote, setActiveEmote] = useState<BotEmoteName | null>(null);
+  useEffect(() => {
+    if (!mobileSidebarOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileSidebarOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [mobileSidebarOpen]);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const audioControllerRef = useRef<AudioController | null>(null);
   const liveKitVoiceRef = useRef<LiveKitVoiceSession | null>(null);
@@ -933,6 +942,7 @@ function App() {
   const navSection = (next: AppSection) => {
     if (!['home', 'chat', 'settings', 'help'].includes(next)) return;
     if (next === 'settings') setVoiceSettingsOpen(false);
+    setMobileSidebarOpen(false);
     setSection(next);
   };
 
@@ -940,6 +950,7 @@ function App() {
     // The existing persistence contract stores one conversation. Keep it intact
     // rather than silently replacing the user's saved history.
     setSection('chat');
+    setMobileSidebarOpen(false);
     setVoiceSettingsOpen(false);
     showToast('A conversa guardada continua disponível no histórico.');
   };
@@ -1118,7 +1129,17 @@ function App() {
       />
 
       <div className="iris-workspace">
-        <aside className="iris-sidebar">
+        {mobileSidebarOpen && (
+          <button
+            className="iris-sidebar-backdrop"
+            type="button"
+            aria-label="Fechar menu lateral"
+            data-testid="button-dismiss-mobile-menu"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+        )}
+        <aside className={`iris-sidebar${mobileSidebarOpen ? ' is-mobile-open' : ''}`} id="iris-sidebar" aria-label="Navegação principal">
+          <button className="iris-mobile-sidebar-close" type="button" aria-label="Fechar menu lateral" data-testid="button-close-mobile-menu" onClick={() => setMobileSidebarOpen(false)}><X /></button>
           <button className="iris-brand" type="button" onClick={() => navSection('chat')} aria-label="IRIS — Conversa">
             <span className="iris-brand-mark"><MochiCanvas state="idle" size={58} className="iris-brand-character" animated={mascotAnimationEnabled} /></span>
             <span><strong>IRIS</strong><small>assistente</small></span>
@@ -1450,6 +1471,10 @@ function App() {
 
       {toast && <div className="iris-toast" role="status" data-testid="status-toast">{toast}</div>}
       <nav className="iris-mobile-nav" aria-label="Navegação móvel">
+        <button type="button" aria-label={mobileSidebarOpen ? 'Fechar menu' : 'Abrir menu'} aria-controls="iris-sidebar" aria-expanded={mobileSidebarOpen} data-testid="button-mobile-menu" onClick={() => setMobileSidebarOpen((open) => !open)}>
+          {mobileSidebarOpen ? <X /> : <Menu />}
+          <span>Menu</span>
+        </button>
         {MOBILE_NAV_ITEMS.map(({ id, label, icon: Icon }) => <button className={section === id ? 'active' : ''} type="button" key={id} onClick={() => navSection(id)} aria-label={label}><Icon /><span>{label}</span></button>)}
       </nav>
     </div>
