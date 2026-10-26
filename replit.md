@@ -41,7 +41,7 @@ Um assistente conversacional para desktop, inspirado na Dynamic Island e acompan
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Após cada alteração feita nesta aplicação, sincronizar o commit com o repositório GitHub. Se o envio não estiver disponível, informar o bloqueio.
 
 ## Gotchas
 
